@@ -20,9 +20,9 @@ The application will provide structured data entry, searchable history, dashboar
 - Backend API design: Defined
 - Frontend design: Defined
 - Security design: Defined
-- Development: In progress (Phase 1, Phase 2 & Phase 3 completed)
+- Development: In progress (Phase 1, Phase 2, Phase 3 & Phase 4 completed)
 
-**Current Phase:** Phase 4 — Frontend Foundation and Authentication
+**Current Phase:** Phase 5 — Project Management
 
 ## 3. Approved Technology Stack
 
@@ -161,7 +161,7 @@ Use Flyway for all database schema changes.
 
 ## 11. Current Pending Work
 
-- Implement Phase 4: Frontend Foundation and Authentication (React screens for Setup, Login, Dashboard routing, and Axios client with token refresh & CSRF).
+- Implement Phase 5: Project Management (Client Projects, Project Codes, Active/Inactive Statuses).
 - Connect local PostgreSQL instance with live credentials.
 
 ## 12. Current Development State
@@ -169,5 +169,6 @@ Use Flyway for all database schema changes.
 - Phase 1 (Repository and Project Initialization) completed.
 - Phase 2 (PostgreSQL and Flyway configuration with V1 migration) completed.
 - Phase 3 (Backend Foundation & Single-User Authentication with JWT and Refresh Token Rotation) completed and tested.
-- Backend foundation with Spring Boot 3.4.3 on Java 23.0.1 verified.
-- Frontend foundation with React + Vite on Node 22.17.1 verified.
+- Phase 4 (Frontend Foundation & Single-User Authentication with React, Tailwind, and Axios Token Rotation) completed and tested.
+- Backend foundation with Spring Boot 3.4.3 on Java 23.0.1 verified (25/25 automated tests pass).
+- Frontend foundation with React + Vite on Node 22.17.1 verified (12/12 unit tests pass, production build clean).

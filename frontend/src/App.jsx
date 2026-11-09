@@ -1,14 +1,35 @@
-import './App.css'
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-function App() {
+import queryClient from './services/query/queryClient';
+import { AuthProvider } from './context/AuthContext';
+import AppRoutes from './routes/AppRoutes';
+
+export function App() {
   return (
-    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', padding: '2rem', textAlign: 'center' }}>
-      <h1>DevWork Tracker</h1>
-      <p style={{ color: '#666', marginTop: '0.5rem' }}>
-        Work tracking foundation initialized successfully.
-      </p>
-    </div>
-  )
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+          <ToastContainer
+            position="top-right"
+            autoClose={4000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
 }
 
-export default App
+export default App;
