@@ -1,6 +1,6 @@
 -- ============================================================
 -- DevWork Tracker - PostgreSQL Database Initialization Script
--- Version: 1.0 (consolidated review draft)
+-- Version: 1.1 (corrected baseline)
 -- Target: PostgreSQL (Neon / Supabase compatible)
 --
 -- IMPORTANT:
@@ -39,6 +39,10 @@ CREATE UNIQUE INDEX uk_app_user_username_lower
 
 CREATE UNIQUE INDEX uk_app_user_email_lower
     ON app_user (LOWER(email));
+
+-- Enforce at most one account in the system
+CREATE UNIQUE INDEX uk_app_user_single_account
+    ON app_user ((true));
 
 
 -- ============================================================
@@ -116,9 +120,6 @@ CREATE INDEX idx_refresh_token_family
 
 CREATE INDEX idx_refresh_token_expiry
     ON refresh_token (expires_at);
-
-CREATE INDEX idx_refresh_token_replaced_by
-    ON refresh_token (replaced_by_token_id);
 
 CREATE UNIQUE INDEX uk_refresh_token_replaced_by
     ON refresh_token (replaced_by_token_id)
@@ -213,7 +214,7 @@ CREATE TABLE work_log
     technology_area      VARCHAR(200),
     start_time           TIME,
     end_time             TIME,
-    status               VARCHAR(30),
+    status               VARCHAR(30) NOT NULL DEFAULT 'IN_PROGRESS',
     problem_blocker      TEXT,
     solution_resolution  TEXT,
     testing_verification TEXT,
@@ -250,11 +251,7 @@ CREATE TABLE work_log
         )),
 
     CONSTRAINT chk_work_log_status
-        CHECK
-        (
-            status IS NULL
-            OR status IN ('COMPLETED', 'IN_PROGRESS', 'BLOCKED', 'ON_HOLD')
-        ),
+        CHECK (status IN ('COMPLETED', 'IN_PROGRESS', 'BLOCKED', 'ON_HOLD')),
 
     CONSTRAINT chk_work_log_time_pair
         CHECK
@@ -378,7 +375,7 @@ CREATE TABLE db_change
     database_name  VARCHAR(50) NOT NULL,
     object_type    VARCHAR(40) NOT NULL,
     object_name    VARCHAR(200) NOT NULL,
-    what_changed   TEXT NOT NULL,
+    what_changed   TEXT,
     why_changed    TEXT,
     affected_object TEXT,
     remarks        TEXT,
@@ -416,10 +413,7 @@ CREATE TABLE db_change
         )),
 
     CONSTRAINT chk_db_change_object_name
-        CHECK (LENGTH(TRIM(object_name)) > 0),
-
-    CONSTRAINT chk_db_change_what_changed
-        CHECK (LENGTH(TRIM(what_changed)) > 0)
+        CHECK (LENGTH(TRIM(object_name)) > 0)
 );
 
 CREATE INDEX idx_db_change_work_log
@@ -554,15 +548,3 @@ COMMIT;
 -- ============================================================
 -- END OF INITIALIZATION SCRIPT
 -- ============================================================
-
--- Suggested verification:
--- SELECT table_name
--- FROM information_schema.tables
--- WHERE table_schema = 'public'
---   AND table_type = 'BASE TABLE'
--- ORDER BY table_name;
---
--- SELECT sequence_name
--- FROM information_schema.sequences
--- WHERE sequence_schema = 'public'
--- ORDER BY sequence_name;

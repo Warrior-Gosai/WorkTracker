@@ -10,3 +10,4 @@ This directory contains database setup instructions and reference SQL scripts fo
 
 ## Contents
 - `reference/`: Contains reference SQL scripts (e.g. `devwork_tracker_postgresql_v1.sql`) for consolidated review and database design reference.
+
