@@ -77,3 +77,4 @@ export const updateWorkLogSchema = z
     message: 'Start time and end time must either both be provided or both be empty',
     path: ['endTime'],
   });
+

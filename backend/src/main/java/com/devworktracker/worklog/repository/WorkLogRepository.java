@@ -28,3 +28,4 @@ public interface WorkLogRepository extends JpaRepository<WorkLog, Long>, JpaSpec
     @EntityGraph(attributePaths = {"taskItem", "taskItem.project"})
     Optional<WorkLog> findById(Long id);
 }
+

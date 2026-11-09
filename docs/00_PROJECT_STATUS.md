@@ -20,9 +20,9 @@ The application will provide structured data entry, searchable history, dashboar
 - Backend API design: Defined
 - Frontend design: Defined
 - Security design: Defined
-- Development: In progress (Phases 1, 2, 3, 4, 5, 6 & 7 completed)
+- Development: In progress (Phases 1, 2, 3, 4, 5, 6, 7 & 8 completed)
 
-**Current Phase:** Phase 8 — Code Change Log
+**Current Phase:** Phase 9 — DB Change Log
 
 ## 3. Approved Technology Stack
 
@@ -161,7 +161,7 @@ Use Flyway for all database schema changes.
 
 ## 11. Current Pending Work
 
-- Implement Phase 8: Code Change Log Module (SVN Revisions, File Level Changes, and Work Log Linking).
+- Implement Phase 9: Database Change Log Module (SQL Scripting, Objects, Operations, and Rollback Tracking).
 - Connect local PostgreSQL instance with live credentials.
 
 ## 12. Current Development State
@@ -196,3 +196,12 @@ Use Flyway for all database schema changes.
   - Frontend Work Log listing (`/work-logs`), Create page (`/work-logs/new`) with active-only task selection and auto-populated project, Edit page (`/work-logs/:workLogId/edit`) with read-only task/project banners, and Details page (`/work-logs/:workLogId`) with 4-section layout.
   - 88/88 backend automated tests passing (25 auth + 22 project + 22 task item + 19 work log tests).
   - 53/53 frontend unit tests passing (12 foundation + 9 project + 17 task item + 15 work log tests), production build verified clean.
+- Phase 8 (Code Change Log Management Module) completed and tested:
+  - Backend `CodeChange` and `CodeChangeFile` entities mapped to `code_change` and `code_change_file` tables with sequence-driven code generation (`CC-000001` via `seq_code_change_code`).
+  - REST endpoints for Create (`POST /api/v1/code-changes`), List with multi-field search, status/environment/date filters, pagination and sorting (`GET /api/v1/code-changes`), Details (`GET /api/v1/code-changes/{id}`), Update (`PUT /api/v1/code-changes/{id}`), Exact SVN Commit ID Search (`GET /api/v1/code-changes/commit/{svnCommitId}`), Add Child File (`POST /api/v1/code-changes/{id}/files`), Update Child File (`PUT /api/v1/code-changes/{id}/files/{fileId}`), and Delete Child File (`DELETE /api/v1/code-changes/{id}/files/{fileId}`).
+  - Strictly prohibited parent deletion endpoint (`DELETE /code-changes/{id}`) omitted by design.
+  - Critical commit workflow: `COMMITTED` requires non-blank unique SVN commit ID; `UNCOMMITTED` requires null commit ID; `UNCOMMITTED` to `COMMITTED` transition updates existing record transactionally and preserves child file records; `COMMITTED` to `UNCOMMITTED` transition is rejected.
+  - Integration: `WorkLogResponse.codeChangeIds` populated with associated code change IDs; Work Log association is immutable.
+  - Frontend Code Change listing (`/code-changes`), Details view (`/code-changes/:codeChangeId`), Create page (`/code-changes/new`), Edit page (`/code-changes/:codeChangeId/edit`), Exact SVN search modal (`CommitSearchModal`), Add/Edit file modal (`FileFormModal`), and Delete file confirmation modal (`DeleteFileModal`).
+  - 107/107 backend automated tests passing (25 auth + 22 project + 22 task item + 19 work log + 19 code change tests).
+  - 74/74 frontend unit tests passing (12 foundation + 9 project + 17 task item + 15 work log + 21 code change tests), production build verified clean.

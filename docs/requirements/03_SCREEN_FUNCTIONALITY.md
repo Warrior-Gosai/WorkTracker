@@ -488,13 +488,26 @@ When an UNCOMMITTED Code Change becomes COMMITTED:
 
 ### 9.5 Details Screen
 
+Route: `/code-changes/:codeChangeId`
+
 Display:
-- Code Change information.
-- Associated Work Log.
-- Task Item and Project.
-- File details.
+- Code Change information (Code, Status badge, SVN Commit ID, Date & Time, Environment badge, timestamps, Remarks).
+- Hierarchy Context (Work Log with date & link, Task Item with title & link, Project with code & link).
+- File details table with layer badge, technology, file path, what/why changed, affected files, remarks, and file-level actions.
 - SVN Commit ID where available.
-- Related DB Changes from the same Work Log.
+- Actions:
+  - Edit Code Change (`/code-changes/:codeChangeId/edit`).
+  - Add File Entry (opens `FileFormModal`).
+  - Edit File Entry (opens `FileFormModal` with initial data).
+  - Delete File Entry (opens `DeleteFileModal` confirmation).
+  - Parent Code Change deletion is strictly prohibited and intentionally excluded from the UI and backend.
+
+### 9.6 Exact SVN Commit Search
+
+Modal: `CommitSearchModal` (available from the Code Changes list header)
+- Allows searching by exact SVN Commit ID (e.g., `r1042`).
+- Returns full context including Code Change code, commit date/time, environment, Work Log, Task Item, and Project.
+- Provides a one-click action to view the full Code Change details.
 
 ## 10. DB Changes Screen
 

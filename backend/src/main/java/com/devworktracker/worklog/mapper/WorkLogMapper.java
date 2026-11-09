@@ -111,3 +111,4 @@ public class WorkLogMapper {
                 .divide(BigDecimal.valueOf(3600), 2, RoundingMode.HALF_UP);
     }
 }
+

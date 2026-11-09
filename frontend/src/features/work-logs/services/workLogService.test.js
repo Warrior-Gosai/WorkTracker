@@ -65,3 +65,4 @@ describe('workLogService', () => {
     expect(result).toEqual(mockUpdated);
   });
 });
+

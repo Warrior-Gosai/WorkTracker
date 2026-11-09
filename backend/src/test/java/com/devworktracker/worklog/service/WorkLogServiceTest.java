@@ -45,6 +45,9 @@ class WorkLogServiceTest {
     @Mock
     private TaskItemRepository taskItemRepository;
 
+    @Mock
+    private com.devworktracker.codechange.repository.CodeChangeRepository codeChangeRepository;
+
     @Spy
     private WorkLogMapper workLogMapper = new WorkLogMapper();
 
@@ -330,3 +333,4 @@ class WorkLogServiceTest {
         assertThat(updated.getTaskItemId()).isEqualTo(20L);
     }
 }
+

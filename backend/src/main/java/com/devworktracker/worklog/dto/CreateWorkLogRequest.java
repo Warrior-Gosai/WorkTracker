@@ -212,3 +212,4 @@ public class CreateWorkLogRequest {
         this.notesRemarks = notesRemarks;
     }
 }
+

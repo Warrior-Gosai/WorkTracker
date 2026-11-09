@@ -79,14 +79,17 @@ public class WorkLogServiceImpl implements WorkLogService {
     private final WorkLogRepository workLogRepository;
     private final TaskItemRepository taskItemRepository;
     private final WorkLogMapper workLogMapper;
+    private final com.devworktracker.codechange.repository.CodeChangeRepository codeChangeRepository;
 
     public WorkLogServiceImpl(
             WorkLogRepository workLogRepository,
             TaskItemRepository taskItemRepository,
-            WorkLogMapper workLogMapper) {
+            WorkLogMapper workLogMapper,
+            com.devworktracker.codechange.repository.CodeChangeRepository codeChangeRepository) {
         this.workLogRepository = workLogRepository;
         this.taskItemRepository = taskItemRepository;
         this.workLogMapper = workLogMapper;
+        this.codeChangeRepository = codeChangeRepository;
     }
 
     @Override
@@ -271,7 +274,14 @@ public class WorkLogServiceImpl implements WorkLogService {
     public WorkLogResponse getWorkLogById(Long workLogId) {
         WorkLog workLog = workLogRepository.findById(workLogId)
                 .orElseThrow(() -> new ResourceNotFoundException("Work log not found with id: " + workLogId));
-        return workLogMapper.toResponse(workLog);
+        WorkLogResponse response = workLogMapper.toResponse(workLog);
+        if (codeChangeRepository != null) {
+            List<Long> codeChangeIds = codeChangeRepository.findByWorkLogId(workLogId).stream()
+                    .map(com.devworktracker.codechange.entity.CodeChange::getCodeChangeId)
+                    .toList();
+            response.setCodeChangeIds(codeChangeIds);
+        }
+        return response;
     }
 
     @Override
@@ -350,3 +360,4 @@ public class WorkLogServiceImpl implements WorkLogService {
         }
     }
 }
+

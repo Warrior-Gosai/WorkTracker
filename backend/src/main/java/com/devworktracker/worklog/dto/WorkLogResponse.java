@@ -340,3 +340,4 @@ public class WorkLogResponse {
         this.updatedAt = updatedAt;
     }
 }
+

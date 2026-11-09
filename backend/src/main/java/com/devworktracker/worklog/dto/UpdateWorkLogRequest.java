@@ -199,3 +199,4 @@ public class UpdateWorkLogRequest {
         this.notesRemarks = notesRemarks;
     }
 }
+

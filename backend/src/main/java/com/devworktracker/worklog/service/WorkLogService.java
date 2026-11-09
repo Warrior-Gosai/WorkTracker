@@ -30,3 +30,4 @@ public interface WorkLogService {
 
     WorkLogResponse updateWorkLog(Long workLogId, UpdateWorkLogRequest request);
 }
+

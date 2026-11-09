@@ -15,6 +15,10 @@ import WorkLogListPage from '../features/work-logs/pages/WorkLogListPage';
 import WorkLogCreatePage from '../features/work-logs/pages/WorkLogCreatePage';
 import WorkLogDetailPage from '../features/work-logs/pages/WorkLogDetailPage';
 import WorkLogEditPage from '../features/work-logs/pages/WorkLogEditPage';
+import CodeChangeListPage from '../features/code-changes/pages/CodeChangeListPage';
+import CodeChangeCreatePage from '../features/code-changes/pages/CodeChangeCreatePage';
+import CodeChangeDetailPage from '../features/code-changes/pages/CodeChangeDetailPage';
+import CodeChangeEditPage from '../features/code-changes/pages/CodeChangeEditPage';
 import { ROUTES } from '../constants';
 
 export const AppRoutes = () => {
@@ -42,6 +46,10 @@ export const AppRoutes = () => {
           <Route path={`${ROUTES.WORK_LOGS}/new`} element={<WorkLogCreatePage />} />
           <Route path={`${ROUTES.WORK_LOGS}/:workLogId`} element={<WorkLogDetailPage />} />
           <Route path={`${ROUTES.WORK_LOGS}/:workLogId/edit`} element={<WorkLogEditPage />} />
+          <Route path={ROUTES.CODE_CHANGES} element={<CodeChangeListPage />} />
+          <Route path={`${ROUTES.CODE_CHANGES}/new`} element={<CodeChangeCreatePage />} />
+          <Route path={`${ROUTES.CODE_CHANGES}/:codeChangeId`} element={<CodeChangeDetailPage />} />
+          <Route path={`${ROUTES.CODE_CHANGES}/:codeChangeId/edit`} element={<CodeChangeEditPage />} />
           {/* Default root path redirects to dashboard */}
           <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.DASHBOARD} replace />} />
         </Route>

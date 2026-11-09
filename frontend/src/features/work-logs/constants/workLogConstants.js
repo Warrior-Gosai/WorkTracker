@@ -23,3 +23,4 @@ export const WORK_STATUSES = [
   { value: 'BLOCKED', label: 'Blocked', color: 'bg-red-50 text-red-700 border-red-200' },
   { value: 'ON_HOLD', label: 'On Hold', color: 'bg-amber-50 text-amber-700 border-amber-200' },
 ];
+

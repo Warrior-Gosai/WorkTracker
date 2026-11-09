@@ -50,7 +50,7 @@ const navItems = [
     name: 'Code Changes',
     path: ROUTES.CODE_CHANGES,
     icon: FileCode2,
-    isAvailable: false,
+    isAvailable: true,
   },
   {
     name: 'DB Changes',

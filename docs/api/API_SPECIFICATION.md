@@ -966,35 +966,133 @@ File-detail endpoints:
 
 List query parameters:
 
-- `workLogId`
-- `projectId`
-- `changeStatus`
-- `environment`
-- `svnCommitId`
-- `fromDate`
-- `toDate`
-- `search`
-- `page`
-- `size`
-- `sortBy`
-- `direction`
+- `workLogId` (BIGINT)
+- `taskItemId` (BIGINT, derived via Work Log)
+- `projectId` (BIGINT, derived via Work Log -> Task Item)
+- `changeStatus` (COMMITTED, UNCOMMITTED)
+- `environment` (LOCAL, UAT, LIVE)
+- `svnCommitId` (VARCHAR)
+- `dateFrom` (TIMESTAMPTZ / ISO-8601 String)
+- `dateTo` (TIMESTAMPTZ / ISO-8601 String)
+- `search` (Search by Code Change code or SVN Commit ID)
+- `page` (Default: 0)
+- `size` (Default: 10, Max: 100)
+- `sortBy` (Allowlist: `codeChangeCode`, `changeDatetime`, `changeStatus`, `environment`, `svnCommitId`, `createdAt`; Default: `changeDatetime`)
+- `direction` (asc, desc; Default: desc)
+
+### Create Code Change Request (`POST /api/v1/code-changes`)
+
+```json
+{
+  "workLogId": 1,
+  "changeStatus": "COMMITTED",
+  "svnCommitId": "r1042",
+  "changeDatetime": "2026-11-09T22:30:00Z",
+  "environment": "LOCAL",
+  "remarks": "Implemented feature files",
+  "files": [
+    {
+      "layer": "BACKEND",
+      "technology": "Java",
+      "filePath": "src/main/java/com/devworktracker/codechange/service/CodeChangeService.java",
+      "whatChanged": "Added service methods",
+      "whyChanged": "Task 8 requirement",
+      "affectedFiles": "CodeChangeController.java",
+      "remarks": "Reviewed"
+    }
+  ]
+}
+```
+
+### Code Change Response (`GET /api/v1/code-changes/{codeChangeId}`)
+
+```json
+{
+  "success": true,
+  "message": "Code change retrieved successfully",
+  "data": {
+    "codeChangeId": 1,
+    "codeChangeCode": "CC-000001",
+    "workLogId": 1,
+    "workLogCode": "WL-000001",
+    "workDate": "2026-11-09",
+    "taskItemId": 10,
+    "taskItemCode": "TASK-000001",
+    "taskItemTitle": "Task management implementation",
+    "projectId": 2,
+    "projectCode": "PRJ-000001",
+    "projectName": "Internal System",
+    "changeStatus": "COMMITTED",
+    "svnCommitId": "r1042",
+    "changeDatetime": "2026-11-09T22:30:00Z",
+    "environment": "LOCAL",
+    "remarks": "Implemented feature files",
+    "createdAt": "2026-11-09T22:30:00Z",
+    "updatedAt": "2026-11-09T22:30:00Z",
+    "files": [
+      {
+        "codeChangeFileId": 1,
+        "codeChangeId": 1,
+        "layer": "BACKEND",
+        "technology": "Java",
+        "filePath": "src/main/java/com/devworktracker/codechange/service/CodeChangeService.java",
+        "whatChanged": "Added service methods",
+        "whyChanged": "Task 8 requirement",
+        "affectedFiles": "CodeChangeController.java",
+        "remarks": "Reviewed",
+        "createdAt": "2026-11-09T22:30:00Z"
+      }
+    ]
+  }
+}
+```
+
+### Exact SVN Commit Search Response (`GET /api/v1/code-changes/commit/{svnCommitId}`)
+
+```json
+{
+  "success": true,
+  "message": "Commit search completed successfully",
+  "data": {
+    "codeChangeId": 1,
+    "codeChangeCode": "CC-000001",
+    "svnCommitId": "r1042",
+    "changeDatetime": "2026-11-09T22:30:00Z",
+    "environment": "LOCAL",
+    "changeStatus": "COMMITTED",
+    "workLogId": 1,
+    "workLogCode": "WL-000001",
+    "workDate": "2026-11-09",
+    "taskItemId": 10,
+    "taskItemCode": "TASK-000001",
+    "taskItemTitle": "Task management implementation",
+    "projectId": 2,
+    "projectCode": "PRJ-000001",
+    "projectName": "Internal System",
+    "dbChanges": []
+  }
+}
+```
 
 Rules:
 - One Code Change represents one SVN commit.
-- File details are optional.
-- COMMITTED requires an SVN Commit ID.
+- File details are optional. Zero or multiple per Code Change.
+- COMMITTED requires a non-blank, unique SVN Commit ID.
 - UNCOMMITTED requires a NULL SVN Commit ID.
-- When an existing UNCOMMITTED record becomes COMMITTED, update the same record.
+- When an existing UNCOMMITTED record becomes COMMITTED, update the same record transactionally.
 - Do not create a duplicate Code Change during conversion.
-- Preserve existing file-detail records.
+- Preserve existing file-detail records during conversion.
+- COMMITTED to UNCOMMITTED transition is strictly prohibited.
+- Parent Code Change deletion (`DELETE /code-changes/{id}`) is strictly prohibited.
+- Individual file entries may be added, updated, or deleted independently.
 - Commit date/time must be recorded accurately.
 
-Searching by commit ID must return associated:
+Searching by commit ID returns associated:
 - Code Change details.
 - Work Log.
 - Task Item.
 - Project.
-- DB Changes belonging to the Work Log.
+- DB Changes belonging to the Work Log (empty collection until Phase 9).
 
 ## 9. Database Change APIs
 
