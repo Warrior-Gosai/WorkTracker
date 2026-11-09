@@ -189,6 +189,137 @@ Example:
 
 `GET /projects?search=FlowTrack&status=1&page=0&size=10&sortBy=projectName&direction=asc`
 
+### Create Project (`POST /projects`)
+
+Request:
+
+```json
+{
+  "projectName": "FlowTrack",
+  "description": "Workflow management module",
+  "remarks": "Repository at gitlab.internal/flowtrack"
+}
+```
+
+Response (HTTP 201 Created):
+
+```json
+{
+  "success": true,
+  "message": "Project created successfully",
+  "data": {
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack",
+    "description": "Workflow management module",
+    "status": 1,
+    "remarks": "Repository at gitlab.internal/flowtrack",
+    "createdAt": "2026-11-09T12:00:00Z",
+    "updatedAt": "2026-11-09T12:00:00Z"
+  },
+  "timestamp": "2026-11-09T12:00:00Z"
+}
+```
+
+### List Projects (`GET /projects`)
+
+Query parameters:
+- `search`: string (matches against project name or project code)
+- `status`: 0 (Inactive), 1 (Active), or omitted (All statuses)
+- `page`: zero-based page index (default: 0)
+- `size`: page size (default: 10, max: 100)
+- `sortBy`: `createdAt` (default), `updatedAt`, `projectName`, `projectCode`, `status`, `projectId`
+- `direction`: `desc` (default), `asc`
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Projects retrieved successfully",
+  "data": {
+    "content": [
+      {
+        "projectId": 1,
+        "projectCode": "PRJ-000001",
+        "projectName": "FlowTrack",
+        "description": "Workflow management module",
+        "status": 1,
+        "remarks": "Repository at gitlab.internal/flowtrack",
+        "createdAt": "2026-11-09T12:00:00Z",
+        "updatedAt": "2026-11-09T12:00:00Z"
+      }
+    ],
+    "page": 0,
+    "size": 10,
+    "totalElements": 1,
+    "totalPages": 1,
+    "first": true,
+    "last": true
+  },
+  "timestamp": "2026-11-09T12:00:00Z"
+}
+```
+
+### Project Details (`GET /projects/{projectId}`)
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Project retrieved successfully",
+  "data": {
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack",
+    "description": "Workflow management module",
+    "status": 1,
+    "remarks": "Repository at gitlab.internal/flowtrack",
+    "createdAt": "2026-11-09T12:00:00Z",
+    "updatedAt": "2026-11-09T12:00:00Z"
+  },
+  "timestamp": "2026-11-09T12:00:00Z"
+}
+```
+
+### Update Project (`PUT /projects/{projectId}`)
+
+Request:
+
+```json
+{
+  "projectName": "FlowTrack Enterprise",
+  "description": "Updated workflow description",
+  "remarks": "Updated remarks"
+}
+```
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Project updated successfully",
+  "data": {
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack Enterprise",
+    "description": "Updated workflow description",
+    "status": 1,
+    "remarks": "Updated remarks",
+    "createdAt": "2026-11-09T12:00:00Z",
+    "updatedAt": "2026-11-09T12:30:00Z"
+  },
+  "timestamp": "2026-11-09T12:30:00Z"
+}
+```
+
+Rules:
+- Project code is immutable and generated via sequence `seq_project_code`.
+- Project status is not editable through the UI and remains unmodified during updates. Inactive projects can be edited.
+- Project deletion is not supported.
+
 Project status has no initial UI-based activation/deactivation workflow. It can be changed manually in the database.
 
 ## 5. Task Item APIs

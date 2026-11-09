@@ -20,9 +20,9 @@ The application will provide structured data entry, searchable history, dashboar
 - Backend API design: Defined
 - Frontend design: Defined
 - Security design: Defined
-- Development: In progress (Phase 1, Phase 2, Phase 3 & Phase 4 completed)
+- Development: In progress (Phases 1, 2, 3, 4 & 5 completed)
 
-**Current Phase:** Phase 5 — Project Management
+**Current Phase:** Phase 6 — Task Item Management
 
 ## 3. Approved Technology Stack
 
@@ -161,7 +161,7 @@ Use Flyway for all database schema changes.
 
 ## 11. Current Pending Work
 
-- Implement Phase 5: Project Management (Client Projects, Project Codes, Active/Inactive Statuses).
+- Implement Phase 6: Task Item Management (Task Types, Priorities, Workflow Statuses, and History).
 - Connect local PostgreSQL instance with live credentials.
 
 ## 12. Current Development State
@@ -170,5 +170,11 @@ Use Flyway for all database schema changes.
 - Phase 2 (PostgreSQL and Flyway configuration with V1 migration) completed.
 - Phase 3 (Backend Foundation & Single-User Authentication with JWT and Refresh Token Rotation) completed and tested.
 - Phase 4 (Frontend Foundation & Single-User Authentication with React, Tailwind, and Axios Token Rotation) completed and tested.
-- Backend foundation with Spring Boot 3.4.3 on Java 23.0.1 verified (25/25 automated tests pass).
-- Frontend foundation with React + Vite on Node 22.17.1 verified (12/12 unit tests pass, production build clean).
+- Phase 5 (Project Management Module) completed and tested:
+  - Backend `Project` entity mapped to `project` table with sequence-driven code generation (`PRJ-000001` via `seq_project_code`).
+  - REST endpoints for Create (`POST /api/v1/projects`), List with search/filter/pagination/sorting (`GET /api/v1/projects`), Details (`GET /api/v1/projects/{id}`), and Update (`PUT /api/v1/projects/{id}`).
+  - Centralized `PageResponse<T>` and strict sort allowlist.
+  - Inactive projects remain visible, filterable, and editable without UI status changes.
+  - Frontend Project listing (`/projects`), Details view (`/projects/:projectId`), and responsive Create/Edit modal with TanStack Query and Zod validation.
+  - 47/47 backend automated tests passing (25 auth + 22 project service/controller tests).
+  - 21/21 frontend unit tests passing, production build verified clean.

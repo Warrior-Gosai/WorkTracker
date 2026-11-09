@@ -26,7 +26,7 @@ const navItems = [
     name: 'Projects',
     path: ROUTES.PROJECTS,
     icon: FolderKanban,
-    isAvailable: false,
+    isAvailable: true,
   },
   {
     name: 'Task Items',
