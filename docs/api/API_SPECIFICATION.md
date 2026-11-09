@@ -636,30 +636,16 @@ Response (HTTP 200 OK):
 
 Base path: `/work-logs`
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/work-logs` | Create Work Log |
-| GET | `/work-logs` | List Work Logs |
-| GET | `/work-logs/{workLogId}` | Work Log Details |
-| PUT | `/work-logs/{workLogId}` | Update Work Log |
+| Method | Endpoint | Purpose | Success |
+|---|---|---|---|
+| POST | `/work-logs` | Create Work Log | 201 |
+| GET | `/work-logs` | List Work Logs | 200 |
+| GET | `/work-logs/{workLogId}` | Work Log Details | 200 |
+| PUT | `/work-logs/{workLogId}` | Update Work Log | 200 |
 
-List query parameters:
+### Create Work Log (`POST /work-logs`)
 
-- `taskItemId`
-- `projectId`
-- `workDate`
-- `fromDate`
-- `toDate`
-- `environment`
-- `workType`
-- `status`
-- `search`
-- `page`
-- `size`
-- `sortBy`
-- `direction`
-
-Create request:
+Request:
 
 ```json
 {
@@ -667,45 +653,261 @@ Create request:
   "workDate": "2026-11-09",
   "environment": "LOCAL",
   "workType": "DEVELOPMENT",
-  "taskRequirement": "Implement project filtering",
-  "workDescription": "Added project filtering functionality",
-  "purposeReason": "Allow faster project discovery",
-  "technologyArea": "React, Spring Boot",
+  "taskRequirement": "Implement Work Log API and duration calculations",
+  "workDescription": "Configured entities, repositories, service methods, and unit tests",
+  "purposeReason": "Replace Daily Work Log Excel workbook",
+  "technologyArea": "Spring Boot 3, JPA, PostgreSQL",
   "startTime": "09:00:00",
-  "endTime": null,
+  "endTime": "18:00:00",
+  "status": "COMPLETED",
+  "problemBlocker": null,
+  "solutionResolution": null,
+  "testingVerification": "All 19 backend tests passed",
+  "resultOutcome": "Feature complete and operational",
+  "pendingNextAction": "Proceed to frontend integration",
+  "notesRemarks": "Adheres strictly to 22-column Excel mapping"
+}
+```
+
+Rules:
+- `taskItemId`: Required. Must reference an existing active (`is_active = 1`) Task Item. Rejects with `400 Bad Request` if inactive.
+- `project`: Automatically derived through Task Item.
+- `workLogCode`: Auto-generated sequence code (`WL-%06d`) using `seq_work_log_code`.
+- `workDate`: Optional (defaults to current date).
+- `environment`: Optional (defaults to `LOCAL`). Allowed: `LOCAL`, `UAT`, `LIVE`.
+- `workType`: Required. Allowed: `DEVELOPMENT`, `BUG_FIXING`, `TESTING`, `DEBUGGING`, `INVESTIGATION`, `ENHANCEMENT`, `DOCUMENTATION`, `DEPLOYMENT`, `MAINTENANCE`, `OTHER`.
+- `status`: Optional (defaults to `IN_PROGRESS`). Allowed: `COMPLETED`, `IN_PROGRESS`, `BLOCKED`, `ON_HOLD`.
+- Time Pairing Validation: Both `startTime` and `endTime` must either be provided or both be null/empty. Single-field population is rejected with `400 Bad Request`.
+- Backend Duration Calculation: `totalHours` is calculated by the backend (not persisted directly in DB). Normal duration, overnight work periods (e.g. 22:00 to 02:00 -> 4.00h), and identical times (0.00h) are handled.
+- Day of Week: Derived dynamically from `workDate` (e.g. `Monday`).
+
+Response (HTTP 201 Created):
+
+```json
+{
+  "success": true,
+  "message": "Work log created successfully",
+  "data": {
+    "workLogId": 1,
+    "workLogCode": "WL-000001",
+    "taskItemId": 1,
+    "taskItemCode": "TASK-000001",
+    "taskItemTitle": "Implement Task Module",
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack",
+    "workDate": "2026-11-09",
+    "day": "Monday",
+    "environment": "LOCAL",
+    "workType": "DEVELOPMENT",
+    "taskRequirement": "Implement Work Log API and duration calculations",
+    "workDescription": "Configured entities, repositories, service methods, and unit tests",
+    "purposeReason": "Replace Daily Work Log Excel workbook",
+    "technologyArea": "Spring Boot 3, JPA, PostgreSQL",
+    "startTime": "09:00:00",
+    "endTime": "18:00:00",
+    "totalHours": 9.00,
+    "status": "COMPLETED",
+    "problemBlocker": null,
+    "solutionResolution": null,
+    "testingVerification": "All 19 backend tests passed",
+    "resultOutcome": "Feature complete and operational",
+    "pendingNextAction": "Proceed to frontend integration",
+    "notesRemarks": "Adheres strictly to 22-column Excel mapping",
+    "codeChangeIds": [],
+    "dbChangeIds": [],
+    "createdAt": "2026-11-09T12:00:00Z",
+    "updatedAt": "2026-11-09T12:00:00Z"
+  },
+  "timestamp": "2026-11-09T12:00:00Z"
+}
+```
+
+### List Work Logs (`GET /work-logs`)
+
+Query parameters:
+- `search`: String (matches Work Log code or Task Requirement)
+- `taskItemId`: Long
+- `projectId`: Long (filtered through Task Item relationship)
+- `workDateFrom`: String (YYYY-MM-DD)
+- `workDateTo`: String (YYYY-MM-DD)
+- `environment`: String (`LOCAL`, `UAT`, `LIVE`)
+- `workType`: String
+- `status`: String (`COMPLETED`, `IN_PROGRESS`, `BLOCKED`, `ON_HOLD`)
+- `page`: zero-based page index (default: 0)
+- `size`: page size (default: 10, max: 100)
+- `sortBy`: `workDate` (default), `workLogId`, `workLogCode`, `environment`, `workType`, `status`, `createdAt`, `updatedAt`, `startTime`, `endTime`
+- `direction`: `desc` (default), `asc`
+
+Default sorting: `workDate DESC, workLogId DESC`.
+Historical Work Logs remain visible regardless of whether their Task Item or Project has become inactive.
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Work logs retrieved successfully",
+  "data": {
+    "content": [
+      {
+        "workLogId": 1,
+        "workLogCode": "WL-000001",
+        "taskItemId": 1,
+        "taskItemCode": "TASK-000001",
+        "taskItemTitle": "Implement Task Module",
+        "projectId": 1,
+        "projectCode": "PRJ-000001",
+        "projectName": "FlowTrack",
+        "workDate": "2026-11-09",
+        "day": "Monday",
+        "environment": "LOCAL",
+        "workType": "DEVELOPMENT",
+        "taskRequirement": "Implement Work Log API and duration calculations",
+        "workDescription": "Configured entities, repositories, service methods, and unit tests",
+        "purposeReason": "Replace Daily Work Log Excel workbook",
+        "technologyArea": "Spring Boot 3, JPA, PostgreSQL",
+        "startTime": "09:00:00",
+        "endTime": "18:00:00",
+        "totalHours": 9.00,
+        "status": "COMPLETED",
+        "problemBlocker": null,
+        "solutionResolution": null,
+        "testingVerification": "All 19 backend tests passed",
+        "resultOutcome": "Feature complete and operational",
+        "pendingNextAction": "Proceed to frontend integration",
+        "notesRemarks": "Adheres strictly to 22-column Excel mapping",
+        "codeChangeIds": [],
+        "dbChangeIds": [],
+        "createdAt": "2026-11-09T12:00:00Z",
+        "updatedAt": "2026-11-09T12:00:00Z"
+      }
+    ],
+    "page": 0,
+    "size": 10,
+    "totalElements": 1,
+    "totalPages": 1,
+    "first": true,
+    "last": true
+  },
+  "timestamp": "2026-11-09T12:00:00Z"
+}
+```
+
+### Work Log Details (`GET /work-logs/{workLogId}`)
+
+Returns full details of the Work Log, including derived Day, Task Item, Project, and backend-calculated Total Hours.
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Work log retrieved successfully",
+  "data": {
+    "workLogId": 1,
+    "workLogCode": "WL-000001",
+    "taskItemId": 1,
+    "taskItemCode": "TASK-000001",
+    "taskItemTitle": "Implement Task Module",
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack",
+    "workDate": "2026-11-09",
+    "day": "Monday",
+    "environment": "LOCAL",
+    "workType": "DEVELOPMENT",
+    "taskRequirement": "Implement Work Log API and duration calculations",
+    "workDescription": "Configured entities, repositories, service methods, and unit tests",
+    "purposeReason": "Replace Daily Work Log Excel workbook",
+    "technologyArea": "Spring Boot 3, JPA, PostgreSQL",
+    "startTime": "09:00:00",
+    "endTime": "18:00:00",
+    "totalHours": 9.00,
+    "status": "COMPLETED",
+    "problemBlocker": null,
+    "solutionResolution": null,
+    "testingVerification": "All 19 backend tests passed",
+    "resultOutcome": "Feature complete and operational",
+    "pendingNextAction": "Proceed to frontend integration",
+    "notesRemarks": "Adheres strictly to 22-column Excel mapping",
+    "codeChangeIds": [],
+    "dbChangeIds": [],
+    "createdAt": "2026-11-09T12:00:00Z",
+    "updatedAt": "2026-11-09T12:00:00Z"
+  },
+  "timestamp": "2026-11-09T12:00:00Z"
+}
+```
+
+### Update Work Log (`PUT /work-logs/{workLogId}`)
+
+Updates mutable work log fields. Task Item association and Project remain immutable. Editing remains permitted even if the associated Task Item has become inactive.
+
+Request:
+
+```json
+{
+  "workDate": "2026-11-09",
+  "environment": "UAT",
+  "workType": "BUG_FIXING",
+  "taskRequirement": "Updated requirement details",
+  "workDescription": "Updated technical description",
+  "purposeReason": "Updated purpose",
+  "technologyArea": "Spring Boot 3",
+  "startTime": "10:00:00",
+  "endTime": "12:00:00",
   "status": "IN_PROGRESS",
   "problemBlocker": null,
   "solutionResolution": null,
   "testingVerification": null,
   "resultOutcome": null,
-  "pendingNextAction": "Complete integration testing",
-  "notesRemarks": null
+  "pendingNextAction": null,
+  "notesRemarks": "Updated notes"
 }
 ```
 
-Rules:
-- Task Item ID is required.
-- Project is derived from the Task Item.
-- Only active Task Items are available for new Work Logs.
-- Work Log status is mandatory.
-- Default status is IN_PROGRESS.
-- Start Time defaults to 09:00 AM in the frontend.
-- End Time is initially empty.
-- Both time fields can be cleared together.
-- Only one populated time field is invalid.
-- Total Hours is calculated by the backend.
-- Work Log association cannot be changed after creation.
+Response (HTTP 200 OK):
 
-Response data should include:
-- Work Log ID and Code.
-- Task Item details.
-- Derived Project details.
-- Work Date and Day.
-- Work details and status.
-- Start Time and End Time.
-- Calculated Total Hours.
-- Associated Code Change IDs.
-- Associated DB Change IDs.
+```json
+{
+  "success": true,
+  "message": "Work log updated successfully",
+  "data": {
+    "workLogId": 1,
+    "workLogCode": "WL-000001",
+    "taskItemId": 1,
+    "taskItemCode": "TASK-000001",
+    "taskItemTitle": "Implement Task Module",
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack",
+    "workDate": "2026-11-09",
+    "day": "Monday",
+    "environment": "UAT",
+    "workType": "BUG_FIXING",
+    "taskRequirement": "Updated requirement details",
+    "workDescription": "Updated technical description",
+    "purposeReason": "Updated purpose",
+    "technologyArea": "Spring Boot 3",
+    "startTime": "10:00:00",
+    "endTime": "12:00:00",
+    "totalHours": 2.00,
+    "status": "IN_PROGRESS",
+    "problemBlocker": null,
+    "solutionResolution": null,
+    "testingVerification": null,
+    "resultOutcome": null,
+    "pendingNextAction": null,
+    "notesRemarks": "Updated notes",
+    "codeChangeIds": [],
+    "dbChangeIds": [],
+    "createdAt": "2026-11-09T12:00:00Z",
+    "updatedAt": "2026-11-09T13:30:00Z"
+  },
+  "timestamp": "2026-11-09T13:30:00Z"
+}
+```
 
 ## 7. Pending Task APIs
 

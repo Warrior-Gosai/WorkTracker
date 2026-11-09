@@ -38,7 +38,7 @@ const navItems = [
     name: 'Work Logs',
     path: ROUTES.WORK_LOGS,
     icon: Clock,
-    isAvailable: false,
+    isAvailable: true,
   },
   {
     name: 'Pending Tasks',

@@ -5,6 +5,7 @@ import com.devworktracker.auth.repository.RefreshTokenRepository;
 import com.devworktracker.project.repository.ProjectRepository;
 import com.devworktracker.taskitem.dao.TaskItemHistoryDao;
 import com.devworktracker.taskitem.repository.TaskItemRepository;
+import com.devworktracker.worklog.repository.WorkLogRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -26,6 +27,9 @@ class DevWorkTrackerApplicationTests {
 
     @MockitoBean
     private TaskItemHistoryDao taskItemHistoryDao;
+
+    @MockitoBean
+    private WorkLogRepository workLogRepository;
 
     @Test
     void contextLoads() {

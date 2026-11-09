@@ -339,27 +339,36 @@ Fields:
 - Pending / Next Action.
 - Notes / Remarks.
 
-### 7.3 Form Actions
+### 7.3 Edit Work Log
 
-- Save Work Log.
+Route: `/work-logs/:workLogId/edit`
+
+Allows editing mutable work log fields:
+- Task Item and Project are displayed in read-only banners (immutable association).
+- Editing remains permitted even if the associated Task Item has become inactive.
+- Supports clearing start/end times together.
+- Validates time pairing and required fields.
+
+### 7.4 Form Actions
+
+- Save / Update Work Log.
 - Cancel.
 
-After successful creation:
-- Show success feedback.
-- Navigate to Work Log Details or list.
-- Make the generated Work Log Code visible.
+After successful creation/update:
+- Show toast feedback with generated or updated Work Log Code.
+- Navigate to Work Log list or details.
 
-### 7.4 Work Log Details
+### 7.5 Work Log Details
 
 Route: `/work-logs/:workLogId`
 
-Display all Work Log information.
-
-Related sections:
-- Code Changes.
-- DB Changes.
-
-Provide actions to add related Code Changes and DB Changes.
+Displays full saved information divided into clean cards:
+- Header with Work Log code, work date, day, status, environment, and Edit action.
+- Linked Task Item and Project summaries (with links).
+- Work Details: Task Requirement, Technical Description, Purpose/Reason, Technology/Area.
+- Time Tracking: Start Time, End Time, and backend-calculated Total Hours.
+- Verification & Outcomes: Problem/Blocker, Solution/Resolution, Testing/Verification, Result/Outcome, Pending/Next Action, Notes/Remarks.
+- Audit timestamps (created and updated).
 
 ## 8. Pending Tasks Screen
 
