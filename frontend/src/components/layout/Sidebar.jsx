@@ -32,7 +32,7 @@ const navItems = [
     name: 'Task Items',
     path: ROUTES.TASK_ITEMS,
     icon: CheckSquare,
-    isAvailable: false,
+    isAvailable: true,
   },
   {
     name: 'Work Logs',

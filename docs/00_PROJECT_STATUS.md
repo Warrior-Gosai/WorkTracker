@@ -20,9 +20,9 @@ The application will provide structured data entry, searchable history, dashboar
 - Backend API design: Defined
 - Frontend design: Defined
 - Security design: Defined
-- Development: In progress (Phases 1, 2, 3, 4 & 5 completed)
+- Development: In progress (Phases 1, 2, 3, 4, 5 & 6 completed)
 
-**Current Phase:** Phase 6 — Task Item Management
+**Current Phase:** Phase 7 — Work Log Module
 
 ## 3. Approved Technology Stack
 
@@ -161,7 +161,7 @@ Use Flyway for all database schema changes.
 
 ## 11. Current Pending Work
 
-- Implement Phase 6: Task Item Management (Task Types, Priorities, Workflow Statuses, and History).
+- Implement Phase 7: Work Log Module (Work Logs, Time Tracking, Status Tracking, and Activity Linking).
 - Connect local PostgreSQL instance with live credentials.
 
 ## 12. Current Development State
@@ -178,3 +178,13 @@ Use Flyway for all database schema changes.
   - Frontend Project listing (`/projects`), Details view (`/projects/:projectId`), and responsive Create/Edit modal with TanStack Query and Zod validation.
   - 47/47 backend automated tests passing (25 auth + 22 project service/controller tests).
   - 21/21 frontend unit tests passing, production build verified clean.
+- Phase 6 (Task Item Management Module) completed and tested:
+  - Backend `TaskItem` entity mapped to `task_item` table with sequence-driven code generation (`TASK-000001` via `seq_task_item_code`).
+  - REST endpoints for Create (`POST /api/v1/task-items`), List active tasks with multi-field search and filters (`GET /api/v1/task-items`), Details (`GET /api/v1/task-items/{id}`), Update (`PUT /api/v1/task-items/{id}`), Workflow Status Update (`PATCH /api/v1/task-items/{id}/status`), Deactivate (`PATCH /api/v1/task-items/{id}/deactivate`), and History Aggregation (`GET /api/v1/task-items/{id}/history`).
+  - Strict database constraint `chk_task_item_completed_at` compliance: backend automatically sets `completed_at` when status transitions to `COMPLETED`, clears it on transition away, and rejects frontend direct manipulation.
+  - Inactive project validation on creation: reject task creation if associated project is inactive (`status == 0`).
+  - Active-only listing: `GET /api/v1/task-items` returns only `is_active = 1` items; deactivation sets `is_active = 0` permanently from UI; historical work logs, code changes, and db changes are fully preserved.
+  - History retrieval via `TaskItemHistoryDaoImpl` native JDBC aggregation across `work_log`, `code_change`, and `db_change`.
+  - Frontend Task Item listing (`/task-items`), Details view (`/task-items/:taskItemId`), Create/Edit modal with active-only project dropdown, Quick Status change modal with completion timestamp warning, Deactivation confirmation modal, and multi-tabbed History section.
+  - 69/69 backend automated tests passing (25 auth + 22 project + 22 task item service/controller tests).
+  - 38/38 frontend unit tests passing (12 foundation + 9 project + 17 task item tests), production build verified clean.

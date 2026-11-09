@@ -326,30 +326,201 @@ Project status has no initial UI-based activation/deactivation workflow. It can 
 
 Base path: `/task-items`
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/task-items` | Create Task Item |
-| GET | `/task-items` | List Task Items |
-| GET | `/task-items/{taskItemId}` | Task Item Details |
-| PUT | `/task-items/{taskItemId}` | Update Task Item |
-| PATCH | `/task-items/{taskItemId}/status` | Update Workflow Status |
-| PATCH | `/task-items/{taskItemId}/activation` | Activate/Deactivate |
-| GET | `/task-items/{taskItemId}/history` | Retrieve Task History |
+| Method | Endpoint | Purpose | Success |
+|---|---|---|---|
+| POST | `/task-items` | Create Task Item | 201 |
+| GET | `/task-items` | List Active Task Items | 200 |
+| GET | `/task-items/{taskItemId}` | Task Item Details | 200 |
+| PUT | `/task-items/{taskItemId}` | Update Task Item | 200 |
+| PATCH | `/task-items/{taskItemId}/status` | Update Workflow Status | 200 |
+| PATCH | `/task-items/{taskItemId}/deactivate` | Deactivate Task Item | 200 |
+| GET | `/task-items/{taskItemId}/history` | Retrieve Task Item History | 200 |
 
-List query parameters:
+### Create Task Item (`POST /task-items`)
 
-- `projectId`
-- `taskType`
-- `priority`
-- `status`
-- `isActive`
-- `search`
-- `page`
-- `size`
-- `sortBy`
-- `direction`
+Request:
 
-Task status request:
+```json
+{
+  "projectId": 1,
+  "taskType": "FEATURE",
+  "title": "Implement authentication endpoints",
+  "description": "JWT-based login and refresh rotation",
+  "priority": "HIGH",
+  "remarks": "Priority feature for Phase 3"
+}
+```
+
+Rules:
+- `projectId`: Required. Must reference an existing active (`status == 1`) project. Rejects with `400 Bad Request` if project is inactive.
+- `taskType`: Required. Must be one of `FEATURE`, `BUG`, `IMPROVEMENT`, `REFACTORING`, `DOCUMENTATION`, `TESTING`, `DEPLOYMENT`, `RESEARCH`, `MAINTENANCE`.
+- `title`: Required (1-200 characters).
+- `description`: Optional text.
+- `priority`: Optional (defaults to `MEDIUM`). Allowed: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
+- `remarks`: Optional text.
+- Task Item code is automatically generated via sequence `seq_task_item_code` (`TASK-%06d`).
+- Initial status defaults to `OPEN`.
+- Initial `is_active` defaults to `1`.
+- `completed_at` is initialized to `null`. Direct assignment by frontend is not permitted.
+
+Response (HTTP 201 Created):
+
+```json
+{
+  "success": true,
+  "message": "Task item created successfully",
+  "data": {
+    "taskItemId": 1,
+    "taskItemCode": "TASK-000001",
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack",
+    "taskType": "FEATURE",
+    "title": "Implement authentication endpoints",
+    "description": "JWT-based login and refresh rotation",
+    "priority": "HIGH",
+    "status": "OPEN",
+    "isActive": 1,
+    "completedAt": null,
+    "remarks": "Priority feature for Phase 3",
+    "createdAt": "2026-11-09T12:00:00Z",
+    "updatedAt": "2026-11-09T12:00:00Z"
+  },
+  "timestamp": "2026-11-09T12:00:00Z"
+}
+```
+
+### List Task Items (`GET /task-items`)
+
+Retrieves active (`is_active = 1`) task items with pagination, multi-field search and filters. Inactive items are excluded.
+
+Query parameters:
+- `projectId`: Long (filters by project ID)
+- `taskType`: String (`FEATURE`, `BUG`, etc.)
+- `priority`: String (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`)
+- `status`: String (`OPEN`, `IN_PROGRESS`, `BLOCKED`, `COMPLETED`, `CANCELLED`)
+- `search`: String (matches against title, task item code, or project name)
+- `page`: zero-based page index (default: 0)
+- `size`: page size (default: 10, max: 100)
+- `sortBy`: `createdAt` (default), `updatedAt`, `title`, `taskItemCode`, `priority`, `status`, `taskType`
+- `direction`: `desc` (default), `asc`
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Task items retrieved successfully",
+  "data": {
+    "content": [
+      {
+        "taskItemId": 1,
+        "taskItemCode": "TASK-000001",
+        "projectId": 1,
+        "projectCode": "PRJ-000001",
+        "projectName": "FlowTrack",
+        "taskType": "FEATURE",
+        "title": "Implement authentication endpoints",
+        "description": "JWT-based login and refresh rotation",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "isActive": 1,
+        "completedAt": null,
+        "remarks": "Priority feature for Phase 3",
+        "createdAt": "2026-11-09T12:00:00Z",
+        "updatedAt": "2026-11-09T12:00:00Z"
+      }
+    ],
+    "page": 0,
+    "size": 10,
+    "totalElements": 1,
+    "totalPages": 1,
+    "first": true,
+    "last": true
+  },
+  "timestamp": "2026-11-09T12:00:00Z"
+}
+```
+
+### Task Item Details (`GET /task-items/{taskItemId}`)
+
+Returns details of an active task item. Returns `404 Not Found` if the item is deactivated (`is_active = 0`).
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Task item retrieved successfully",
+  "data": {
+    "taskItemId": 1,
+    "taskItemCode": "TASK-000001",
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack",
+    "taskType": "FEATURE",
+    "title": "Implement authentication endpoints",
+    "description": "JWT-based login and refresh rotation",
+    "priority": "HIGH",
+    "status": "OPEN",
+    "isActive": 1,
+    "completedAt": null,
+    "remarks": "Priority feature for Phase 3",
+    "createdAt": "2026-11-09T12:00:00Z",
+    "updatedAt": "2026-11-09T12:00:00Z"
+  },
+  "timestamp": "2026-11-09T12:00:00Z"
+}
+```
+
+### Update Task Item (`PUT /task-items/{taskItemId}`)
+
+Updates mutable metadata of an active task item. Project ID, task code, status, and active flag cannot be changed via this endpoint.
+
+Request:
+
+```json
+{
+  "title": "Implement authentication endpoints and tests",
+  "taskType": "FEATURE",
+  "priority": "CRITICAL",
+  "description": "Updated JWT-based login with rotation and unit tests",
+  "remarks": "Updated remarks"
+}
+```
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Task item updated successfully",
+  "data": {
+    "taskItemId": 1,
+    "taskItemCode": "TASK-000001",
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack",
+    "taskType": "FEATURE",
+    "title": "Implement authentication endpoints and tests",
+    "description": "Updated JWT-based login with rotation and unit tests",
+    "priority": "CRITICAL",
+    "status": "OPEN",
+    "isActive": 1,
+    "completedAt": null,
+    "remarks": "Updated remarks",
+    "createdAt": "2026-11-09T12:00:00Z",
+    "updatedAt": "2026-11-09T12:45:00Z"
+  },
+  "timestamp": "2026-11-09T12:45:00Z"
+}
+```
+
+### Update Workflow Status (`PATCH /task-items/{taskItemId}/status`)
+
+Transitions the workflow status of an active task item.
+
+Request:
 
 ```json
 {
@@ -357,20 +528,109 @@ Task status request:
 }
 ```
 
-Activation request:
+Completion Timestamp Rules:
+- If `status` transitions to `COMPLETED`: backend automatically sets `completed_at = Instant.now()`.
+- If already `COMPLETED` and status remains `COMPLETED`: original `completed_at` is preserved.
+- If status transitions away from `COMPLETED` (e.g. to `IN_PROGRESS` or `REOPENED`): backend automatically sets `completed_at = null`.
+- These rules satisfy database check constraint `chk_task_item_completed_at`.
+
+Response (HTTP 200 OK):
 
 ```json
 {
-  "isActive": 0
+  "success": true,
+  "message": "Task item status updated successfully",
+  "data": {
+    "taskItemId": 1,
+    "taskItemCode": "TASK-000001",
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack",
+    "taskType": "FEATURE",
+    "title": "Implement authentication endpoints and tests",
+    "description": "Updated JWT-based login with rotation and unit tests",
+    "priority": "CRITICAL",
+    "status": "COMPLETED",
+    "isActive": 1,
+    "completedAt": "2026-11-09T13:00:00Z",
+    "remarks": "Updated remarks",
+    "createdAt": "2026-11-09T12:00:00Z",
+    "updatedAt": "2026-11-09T13:00:00Z"
+  },
+  "timestamp": "2026-11-09T13:00:00Z"
 }
 ```
 
-Task history includes:
-- Related Work Logs.
-- Related Code Changes.
-- Related DB Changes.
+### Deactivate Task Item (`PATCH /task-items/{taskItemId}/deactivate`)
 
-Pending Tasks are not included because they are independent records.
+Deactivates a task item (`is_active = 0`).
+
+Rules:
+- Permanent in the UI: No reactivate endpoint or button exists. Reactivation requires direct database intervention.
+- Historical data protection: Associated `work_log`, `code_change`, and `db_change` records are completely preserved and never deleted or modified.
+- Deactivated items are excluded from future work log selection and active task listings.
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Task item deactivated successfully",
+  "data": null,
+  "timestamp": "2026-11-09T13:15:00Z"
+}
+```
+
+### Task Item History (`GET /task-items/{taskItemId}/history`)
+
+Retrieves historical records linked to the task item across Work Logs, Code Changes, and DB Changes.
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Task item history retrieved successfully",
+  "data": {
+    "workLogs": [
+      {
+        "workLogId": 1,
+        "workDate": "2026-11-09",
+        "description": "Configured Spring Security and JWT filter chain",
+        "environment": "DEV",
+        "workType": "DEVELOPMENT",
+        "status": "COMPLETED",
+        "totalHours": 4.5,
+        "createdAt": "2026-11-09T10:00:00Z"
+      }
+    ],
+    "codeChanges": [
+      {
+        "codeChangeId": 1,
+        "workLogId": 1,
+        "svnRevision": "1042",
+        "commitMessage": "feat: add JWT authentication filter",
+        "isCommitted": 1,
+        "fileCount": 3,
+        "createdAt": "2026-11-09T11:00:00Z"
+      }
+    ],
+    "dbChanges": [
+      {
+        "dbChangeId": 1,
+        "workLogId": 1,
+        "environment": "DEV",
+        "changeType": "TABLE_CREATION",
+        "objectName": "app_user",
+        "whatChanged": "Initial user table with unique constraint",
+        "isExecuted": 1,
+        "createdAt": "2026-11-09T11:30:00Z"
+      }
+    ]
+  },
+  "timestamp": "2026-11-09T13:20:00Z"
+}
+```
 
 ## 6. Work Log APIs
 

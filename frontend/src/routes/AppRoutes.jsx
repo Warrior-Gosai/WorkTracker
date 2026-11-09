@@ -9,6 +9,8 @@ import SetupPage from '../features/auth/pages/SetupPage';
 import DashboardPlaceholderPage from '../features/dashboard/pages/DashboardPlaceholderPage';
 import ProjectListPage from '../features/projects/pages/ProjectListPage';
 import ProjectDetailPage from '../features/projects/pages/ProjectDetailPage';
+import TaskItemListPage from '../features/task-items/pages/TaskItemListPage';
+import TaskItemDetailPage from '../features/task-items/pages/TaskItemDetailPage';
 import { ROUTES } from '../constants';
 
 export const AppRoutes = () => {
@@ -30,6 +32,8 @@ export const AppRoutes = () => {
           <Route path={ROUTES.DASHBOARD} element={<DashboardPlaceholderPage />} />
           <Route path={ROUTES.PROJECTS} element={<ProjectListPage />} />
           <Route path={`${ROUTES.PROJECTS}/:projectId`} element={<ProjectDetailPage />} />
+          <Route path={ROUTES.TASK_ITEMS} element={<TaskItemListPage />} />
+          <Route path={`${ROUTES.TASK_ITEMS}/:taskItemId`} element={<TaskItemDetailPage />} />
           {/* Default root path redirects to dashboard */}
           <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.DASHBOARD} replace />} />
         </Route>
