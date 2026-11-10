@@ -372,60 +372,96 @@ Displays full saved information divided into clean cards:
 
 ## 8. Pending Tasks Screen
 
-Route: `/pending-tasks`
+Routes:
+- `/pending-tasks` (List)
+- `/pending-tasks/new` (Create)
+- `/pending-tasks/:pendingTaskId` (Details)
+- `/pending-tasks/:pendingTaskId/edit` (Edit)
 
-Purpose: Track follow-up work independently of Work Logs and Task Items.
+Purpose: Track follow-up work, reminders, and action items independently of Work Logs and Task Items.
 
-### 8.1 List
+### 8.1 List Page (`/pending-tasks`)
 
 Columns:
-- Pending Task Code.
-- Project.
-- Title.
-- Priority.
-- Status.
-- Due Date.
-- Overdue Indicator.
-- Actions.
+- Pending Task Code (links to details).
+- Project (Code and Name).
+- Title & Description snippet (links to details).
+- Priority badge (Low, Medium, High, Critical).
+- Status badge (Pending, In Progress, On Hold, Completed, Cancelled) with click-to-change action.
+- Due Date (or "No due date").
+- Overdue Indicator (prominent badge when overdue).
+- Actions: Quick Status Change, View Details, Edit.
 
 Filters:
-- Project.
-- Priority.
-- Status.
-- Overdue.
-- Due Date.
-- Search.
+- Search (across code, title, description, remarks, project name/code).
+- Project dropdown (all projects).
+- Priority dropdown (All, Low, Medium, High, Critical).
+- Status dropdown (Default: Active Tasks [Pending, In Progress, On Hold]; All Statuses; individual statuses).
+- Overdue dropdown (All Due Dates, Overdue Only, Not Overdue).
+- Due Date Range (from date and to date).
+- Reset filters button.
 
-### 8.2 Create / Edit Form
+Pagination & Sorting:
+- Server-side pagination with selectable page size (10, 25, 50).
+- Sortable columns: Code, Title, Priority, Status, Due Date (default sort: `dueDate` ASC with nulls last, `pendingTaskId` DESC secondary).
+
+### 8.2 Create Page (`/pending-tasks/new`)
 
 Fields:
-- Project (required).
-- Title (required).
-- Description (optional).
-- Priority (default MEDIUM).
-- Status (default PENDING).
-- Due Date (optional).
-- Remarks (optional).
+- Project (Required; dropdown fetches active projects `status = 1` only).
+- Title (Required, max 200 characters).
+- Description (Optional).
+- Priority (Default: MEDIUM; Low, Medium, High, Critical).
+- Status (Default: PENDING; Pending, In Progress, On Hold, Completed, Cancelled).
+- Due Date (Optional date picker).
+- Remarks (Optional).
 
-### 8.3 Actions
+Rules:
+- Inactive projects are excluded from project selection.
+- Does not contain Task Item or Work Log selection fields.
+- Submitting with `COMPLETED` records the completion timestamp automatically via backend logic.
 
-- Create.
-- Edit.
-- Change status.
-- View details.
+### 8.3 Details Page (`/pending-tasks/:pendingTaskId`)
 
-Do not provide hard deletion.
+Sections:
+- Header: Task Code, Title, Priority badge, Status badge, Overdue indicator, and audit timestamps.
+- Action Buttons: Change Status (opens modal), Edit Task (navigates to `/edit`), and Back to List.
+- Task Description and Remarks cards with formatted whitespace.
+- Associated Project card linking to `/projects/:projectId` (noting permanent association).
+- Status Summary card with overdue calculation.
 
-### 8.4 Overdue Behaviour
+### 8.4 Edit Page (`/pending-tasks/:pendingTaskId/edit`)
+
+Fields:
+- Project Context: Displayed as a read-only banner with permanent association notice.
+- Title (Required).
+- Description (Optional).
+- Priority (Low, Medium, High, Critical).
+- Status (Pending, In Progress, On Hold, Completed, Cancelled).
+- Due Date (Optional).
+- Remarks (Optional).
+
+Rules:
+- Historical pending tasks belonging to inactive projects remain accessible and editable.
+- Project cannot be modified (`projectId` is immutable).
+- Moving status to `COMPLETED` sets `completed_at` automatically.
+- Moving status away from `COMPLETED` clears `completed_at` automatically.
+- Keeping status `COMPLETED` preserves the original `completed_at` timestamp.
+
+### 8.5 Overdue Behaviour
 
 A Pending Task is overdue when:
-- Due Date is before today.
-- Status is not COMPLETED.
-- Status is not CANCELLED.
+- Due Date is earlier than today's date (`dueDate < CURRENT_DATE`).
+- Status is not `COMPLETED`.
+- Status is not `CANCELLED`.
+- A task due today is NOT overdue.
+- A task without a due date is NOT overdue.
+- Overdue status is calculated dynamically by the backend.
 
-Due today is not overdue.
+### 8.6 Deletion Restrictions
 
-Show overdue status clearly.
+- Hard deletion is strictly prohibited (no delete button or endpoint).
+- If a task is no longer needed, change its status to `CANCELLED`.
 
 ## 9. Code Changes Screen
 

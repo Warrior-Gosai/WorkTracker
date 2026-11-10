@@ -20,9 +20,9 @@ The application will provide structured data entry, searchable history, dashboar
 - Backend API design: Defined
 - Frontend design: Defined
 - Security design: Defined
-- Development: In progress (Phases 1, 2, 3, 4, 5, 6, 7, 8 & 9 completed)
+- Development: In progress (Phases 1, 2, 3, 4, 5, 6, 7, 8, 9 & 10 completed)
 
-**Current Phase:** Phase 10 — Pending Tasks
+**Current Phase:** Phase 11 — Dashboard
 
 ## 3. Approved Technology Stack
 
@@ -161,7 +161,7 @@ Use Flyway for all database schema changes.
 
 ## 11. Current Pending Work
 
-- Implement Phase 10: Pending Tasks Module.
+- Implement Phase 11: Dashboard Module.
 - Connect local PostgreSQL instance with live credentials.
 
 ## 12. Current Development State
@@ -214,3 +214,15 @@ Use Flyway for all database schema changes.
   - Frontend DB Change listing (`/db-changes`), Create page (`/db-changes/new`), Edit page (`/db-changes/:dbChangeId/edit`), and Details page (`/db-changes/:dbChangeId`).
   - 127/127 backend automated tests passing (25 auth + 22 project + 22 task item + 19 work log + 19 code change + 20 db change tests).
   - 88/88 frontend unit tests passing (12 foundation + 9 project + 17 task item + 15 work log + 21 code change + 14 db change tests), production build verified clean.
+- Phase 10 (Pending Task Management Module) completed and tested:
+  - Backend `PendingTask` entity mapped to `pending_task` table with sequence-driven code generation (`PT-000001` via `seq_pending_task_code`).
+  - REST endpoints for Create (`POST /api/v1/pending-tasks`), List with multi-field search and filters (`GET /api/v1/pending-tasks`), Details (`GET /api/v1/pending-tasks/{id}`), Update (`PUT /api/v1/pending-tasks/{id}`), and Workflow Status Update (`PATCH /api/v1/pending-tasks/{id}/status`).
+  - Strict database constraint `chk_pending_task_completed_at` compliance: backend automatically records `completed_at` when status transitions to `COMPLETED`, preserves timestamp when remaining `COMPLETED`, and clears it when transitioning away from `COMPLETED`.
+  - Independent lifecycle: directly linked to Project, independent of Task Items and Work Logs.
+  - Project validation & historical editing: creation requires an active project (`status = 1`); existing pending tasks remain accessible and editable even when the project becomes inactive.
+  - Dynamic overdue calculation: tasks with `due_date < today` and status not `COMPLETED` or `CANCELLED` flagged as overdue; due today is not overdue; tasks without due dates are not overdue.
+  - Default list behavior: defaults to `PENDING`, `IN_PROGRESS`, and `ON_HOLD` when no status filter is provided; explicit status and overdue filters supported.
+  - Deletion strictly prohibited (no delete endpoint, returns HTTP 405 Method Not Allowed).
+  - Frontend Pending Tasks listing (`/pending-tasks`), Details view (`/pending-tasks/:pendingTaskId`), Create page (`/pending-tasks/new`) with active-only project dropdown, Edit page (`/pending-tasks/:pendingTaskId/edit`) with read-only project context banner, and Quick Status Modal. Sidebar updated.
+  - 145/145 backend automated tests passing (25 auth + 22 project + 22 task item + 19 work log + 19 code change + 20 db change + 18 pending task tests).
+  - 104/104 frontend unit tests passing across 14 test files, production build verified clean.

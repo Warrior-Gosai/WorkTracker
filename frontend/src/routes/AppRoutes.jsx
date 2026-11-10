@@ -23,6 +23,10 @@ import DbChangeListPage from '../features/db-changes/pages/DbChangeListPage';
 import DbChangeCreatePage from '../features/db-changes/pages/DbChangeCreatePage';
 import DbChangeDetailPage from '../features/db-changes/pages/DbChangeDetailPage';
 import DbChangeEditPage from '../features/db-changes/pages/DbChangeEditPage';
+import PendingTaskListPage from '../features/pending-tasks/pages/PendingTaskListPage';
+import PendingTaskCreatePage from '../features/pending-tasks/pages/PendingTaskCreatePage';
+import PendingTaskDetailPage from '../features/pending-tasks/pages/PendingTaskDetailPage';
+import PendingTaskEditPage from '../features/pending-tasks/pages/PendingTaskEditPage';
 import { ROUTES } from '../constants';
 
 export const AppRoutes = () => {
@@ -50,6 +54,10 @@ export const AppRoutes = () => {
           <Route path={`${ROUTES.WORK_LOGS}/new`} element={<WorkLogCreatePage />} />
           <Route path={`${ROUTES.WORK_LOGS}/:workLogId`} element={<WorkLogDetailPage />} />
           <Route path={`${ROUTES.WORK_LOGS}/:workLogId/edit`} element={<WorkLogEditPage />} />
+          <Route path={ROUTES.PENDING_TASKS} element={<PendingTaskListPage />} />
+          <Route path={`${ROUTES.PENDING_TASKS}/new`} element={<PendingTaskCreatePage />} />
+          <Route path={`${ROUTES.PENDING_TASKS}/:pendingTaskId`} element={<PendingTaskDetailPage />} />
+          <Route path={`${ROUTES.PENDING_TASKS}/:pendingTaskId/edit`} element={<PendingTaskEditPage />} />
           <Route path={ROUTES.CODE_CHANGES} element={<CodeChangeListPage />} />
           <Route path={`${ROUTES.CODE_CHANGES}/new`} element={<CodeChangeCreatePage />} />
           <Route path={`${ROUTES.CODE_CHANGES}/:codeChangeId`} element={<CodeChangeDetailPage />} />

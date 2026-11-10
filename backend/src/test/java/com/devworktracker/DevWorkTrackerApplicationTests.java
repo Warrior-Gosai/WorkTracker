@@ -40,6 +40,9 @@ class DevWorkTrackerApplicationTests {
     @MockitoBean
     private com.devworktracker.dbchange.repository.DbChangeRepository dbChangeRepository;
 
+    @MockitoBean
+    private com.devworktracker.pendingtask.repository.PendingTaskRepository pendingTaskRepository;
+
     @Test
     void contextLoads() {
     }

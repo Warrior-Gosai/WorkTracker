@@ -923,26 +923,97 @@ Base path: `/pending-tasks`
 
 List query parameters:
 
-- `projectId`
-- `priority`
-- `status`
-- `overdue`
-- `dueDate`
-- `fromDate`
-- `toDate`
-- `search`
-- `page`
-- `size`
-- `sortBy`
-- `direction`
+- `projectId` (BIGINT)
+- `priority` (LOW, MEDIUM, HIGH, CRITICAL)
+- `status` (PENDING, IN_PROGRESS, ON_HOLD, COMPLETED, CANCELLED, ALL; Default: active tasks PENDING, IN_PROGRESS, ON_HOLD)
+- `overdue` (BOOLEAN: true = overdue only, false = not overdue)
+- `dueDateFrom` / `fromDate` (LocalDate, `yyyy-MM-dd`)
+- `dueDateTo` / `toDate` (LocalDate, `yyyy-MM-dd`)
+- `search` (Search across code, title, description, remarks, project code/name)
+- `page` (Default: 0)
+- `size` (Default: 10, Max: 100)
+- `sortBy` (Allowlist: `dueDate`, `pendingTaskId`, `pendingTaskCode`, `title`, `priority`, `status`, `completedAt`, `createdAt`, `updatedAt`; Default: `dueDate`)
+- `direction` (asc, desc; Default: asc)
+
+### Create Pending Task Request (`POST /api/v1/pending-tasks`)
+
+```json
+{
+  "projectId": 1,
+  "title": "Review database indexes and query execution plans",
+  "description": "Analyze slow queries on work_log table using pg_stat_statements",
+  "priority": "HIGH",
+  "status": "PENDING",
+  "dueDate": "2026-11-20",
+  "remarks": "Scheduled for review before release"
+}
+```
+
+### Pending Task Response (`GET /api/v1/pending-tasks/{pendingTaskId}`)
+
+```json
+{
+  "success": true,
+  "message": "Pending task retrieved successfully",
+  "data": {
+    "pendingTaskId": 1,
+    "pendingTaskCode": "PT-000001",
+    "projectId": 1,
+    "projectCode": "PRJ-000001",
+    "projectName": "FlowTrack",
+    "title": "Review database indexes and query execution plans",
+    "description": "Analyze slow queries on work_log table using pg_stat_statements",
+    "priority": "HIGH",
+    "status": "PENDING",
+    "dueDate": "2026-11-20",
+    "completedAt": null,
+    "remarks": "Scheduled for review before release",
+    "overdue": false,
+    "createdAt": "2026-11-10T18:00:00Z",
+    "updatedAt": "2026-11-10T18:00:00Z"
+  }
+}
+```
+
+### Update Pending Task Request (`PUT /api/v1/pending-tasks/{pendingTaskId}`)
+
+```json
+{
+  "title": "Review database indexes and vacuum configurations",
+  "description": "Updated query execution review with autovacuum settings",
+  "priority": "CRITICAL",
+  "status": "IN_PROGRESS",
+  "dueDate": "2026-11-25",
+  "remarks": "Adjusted due date per team sync"
+}
+```
+
+### Update Status Request (`PATCH /api/v1/pending-tasks/{pendingTaskId}/status`)
+
+```json
+{
+  "status": "COMPLETED"
+}
+```
 
 Rules:
-- Project ID is mandatory.
-- Project association cannot be changed after creation.
-- Pending Tasks are independent of Task Items and Work Logs.
-- Overdue is calculated by the backend.
-- A task is overdue when due_date is before today and status is neither COMPLETED nor CANCELLED.
-- Due today is not overdue.
+- Project ID is mandatory upon creation and must reference an active Project (`status = 1`).
+- Project association is permanent and immutable after creation (`projectId` cannot be updated).
+- Pending Tasks are independent of Task Items and Work Logs (no `task_item_id` or `work_log_id`).
+- Sequence-based code generation using PostgreSQL `seq_pending_task_code` (`PT-%06d`).
+- Priority allowed values: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` (Default: `MEDIUM`).
+- Status allowed values: `PENDING`, `IN_PROGRESS`, `ON_HOLD`, `COMPLETED`, `CANCELLED` (Default: `PENDING`).
+- Default list behavior: defaults to `PENDING`, `IN_PROGRESS`, `ON_HOLD` when no status filter is provided. Passing `status=ALL` or specific statuses allows accessing completed and cancelled tasks.
+- Overdue calculation: A task is overdue when `dueDate < CURRENT_DATE` and status is neither `COMPLETED` nor `CANCELLED`.
+  - A task due today is NOT overdue.
+  - A task without a due date is NOT overdue.
+  - Calculated dynamically by the backend; no overdue column stored in the database.
+- Completion timestamp rules:
+  - When status changes to `COMPLETED`: backend automatically sets `completed_at = Instant.now()`.
+  - When status remains `COMPLETED`: original `completed_at` timestamp is preserved.
+  - When status changes away from `COMPLETED`: backend automatically sets `completed_at = null`.
+- Historical records remain accessible and editable even if the linked Project becomes inactive.
+- Hard deletion is strictly prohibited (no delete endpoint, returns HTTP 405 Method Not Allowed). Cancelled status should be used instead.
 
 ## 8. Code Change APIs
 

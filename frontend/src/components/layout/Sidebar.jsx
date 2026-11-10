@@ -44,7 +44,7 @@ const navItems = [
     name: 'Pending Tasks',
     path: ROUTES.PENDING_TASKS,
     icon: Hourglass,
-    isAvailable: false,
+    isAvailable: true,
   },
   {
     name: 'Code Changes',
