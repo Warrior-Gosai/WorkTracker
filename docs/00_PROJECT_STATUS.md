@@ -20,9 +20,9 @@ The application will provide structured data entry, searchable history, dashboar
 - Backend API design: Defined
 - Frontend design: Defined
 - Security design: Defined
-- Development: In progress (Phases 1, 2, 3, 4, 5, 6, 7 & 8 completed)
+- Development: In progress (Phases 1, 2, 3, 4, 5, 6, 7, 8 & 9 completed)
 
-**Current Phase:** Phase 9 — DB Change Log
+**Current Phase:** Phase 10 — Pending Tasks
 
 ## 3. Approved Technology Stack
 
@@ -161,7 +161,7 @@ Use Flyway for all database schema changes.
 
 ## 11. Current Pending Work
 
-- Implement Phase 9: Database Change Log Module (SQL Scripting, Objects, Operations, and Rollback Tracking).
+- Implement Phase 10: Pending Tasks Module.
 - Connect local PostgreSQL instance with live credentials.
 
 ## 12. Current Development State
@@ -205,3 +205,12 @@ Use Flyway for all database schema changes.
   - Frontend Code Change listing (`/code-changes`), Details view (`/code-changes/:codeChangeId`), Create page (`/code-changes/new`), Edit page (`/code-changes/:codeChangeId/edit`), Exact SVN search modal (`CommitSearchModal`), Add/Edit file modal (`FileFormModal`), and Delete file confirmation modal (`DeleteFileModal`).
   - 107/107 backend automated tests passing (25 auth + 22 project + 22 task item + 19 work log + 19 code change tests).
   - 74/74 frontend unit tests passing (12 foundation + 9 project + 17 task item + 15 work log + 21 code change tests), production build verified clean.
+- Phase 9 (Database Change Log Management Module) completed and tested:
+  - Backend `DbChange` entity mapped to `db_change` table with sequence-driven code generation (`DB-000001` via `seq_db_change_code`).
+  - REST endpoints for Create (`POST /api/v1/db-changes`), List with search, filters (workLogId, taskItemId, projectId, dateFrom, dateTo, environment, databaseName, objectType), pagination and sorting (`GET /api/v1/db-changes`), Details (`GET /api/v1/db-changes/{id}`), and Update (`PUT /api/v1/db-changes/{id}`).
+  - Deletion endpoint strictly omitted (prohibited).
+  - Business rules: Immutable work log association; derived Task Item and Project context; required fields validated on backend and frontend; allowed databases and object types normalized to exact PostgreSQL check constraint casing; historical records remain editable even if Task Item or Project becomes inactive.
+  - History & Work Log integration: `WorkLogResponse.dbChangeIds` populated; Work Log detail page displays Related Database Changes table with view links; Task Item history displays DB changes.
+  - Frontend DB Change listing (`/db-changes`), Create page (`/db-changes/new`), Edit page (`/db-changes/:dbChangeId/edit`), and Details page (`/db-changes/:dbChangeId`).
+  - 127/127 backend automated tests passing (25 auth + 22 project + 22 task item + 19 work log + 19 code change + 20 db change tests).
+  - 88/88 frontend unit tests passing (12 foundation + 9 project + 17 task item + 15 work log + 21 code change + 14 db change tests), production build verified clean.

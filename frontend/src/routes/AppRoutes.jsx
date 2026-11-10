@@ -19,6 +19,10 @@ import CodeChangeListPage from '../features/code-changes/pages/CodeChangeListPag
 import CodeChangeCreatePage from '../features/code-changes/pages/CodeChangeCreatePage';
 import CodeChangeDetailPage from '../features/code-changes/pages/CodeChangeDetailPage';
 import CodeChangeEditPage from '../features/code-changes/pages/CodeChangeEditPage';
+import DbChangeListPage from '../features/db-changes/pages/DbChangeListPage';
+import DbChangeCreatePage from '../features/db-changes/pages/DbChangeCreatePage';
+import DbChangeDetailPage from '../features/db-changes/pages/DbChangeDetailPage';
+import DbChangeEditPage from '../features/db-changes/pages/DbChangeEditPage';
 import { ROUTES } from '../constants';
 
 export const AppRoutes = () => {
@@ -50,6 +54,10 @@ export const AppRoutes = () => {
           <Route path={`${ROUTES.CODE_CHANGES}/new`} element={<CodeChangeCreatePage />} />
           <Route path={`${ROUTES.CODE_CHANGES}/:codeChangeId`} element={<CodeChangeDetailPage />} />
           <Route path={`${ROUTES.CODE_CHANGES}/:codeChangeId/edit`} element={<CodeChangeEditPage />} />
+          <Route path={ROUTES.DB_CHANGES} element={<DbChangeListPage />} />
+          <Route path={`${ROUTES.DB_CHANGES}/new`} element={<DbChangeCreatePage />} />
+          <Route path={`${ROUTES.DB_CHANGES}/:dbChangeId`} element={<DbChangeDetailPage />} />
+          <Route path={`${ROUTES.DB_CHANGES}/:dbChangeId/edit`} element={<DbChangeEditPage />} />
           {/* Default root path redirects to dashboard */}
           <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.DASHBOARD} replace />} />
         </Route>

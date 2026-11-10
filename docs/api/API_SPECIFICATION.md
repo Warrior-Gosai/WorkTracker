@@ -1107,25 +1107,79 @@ Base path: `/db-changes`
 
 List query parameters:
 
-- `workLogId`
-- `projectId`
-- `environment`
-- `databaseName`
-- `objectType`
-- `objectName`
-- `fromDate`
-- `toDate`
-- `search`
-- `page`
-- `size`
-- `sortBy`
-- `direction`
+- `workLogId` (BIGINT)
+- `taskItemId` (BIGINT, derived through Work Log)
+- `projectId` (BIGINT, derived through Work Log -> Task Item)
+- `dateFrom` (LocalDate, `yyyy-MM-dd`)
+- `dateTo` (LocalDate, `yyyy-MM-dd`)
+- `environment` (LOCAL, UAT, LIVE)
+- `databaseName` (Oracle, PostgreSQL, MySQL, SQL Server, MongoDB, Other)
+- `objectType` (Table, Procedure, Function, Trigger, View, Package, Cursor, Sequence, Index, Constraint, Other)
+- `search` (Search across code, object name, database, reasons, remarks, work log, task, project)
+- `page` (Default: 0)
+- `size` (Default: 10, Max: 100)
+- `sortBy` (Allowlist: `createdAt`, `updatedAt`, `dbChangeId`, `dbChangeCode`, `environment`, `databaseName`, `objectType`, `objectName`; Default: `createdAt`)
+- `direction` (asc, desc; Default: desc)
+
+### Create DB Change Request (`POST /api/v1/db-changes`)
+
+```json
+{
+  "workLogId": 1,
+  "environment": "LOCAL",
+  "databaseName": "PostgreSQL",
+  "objectType": "Table",
+  "objectName": "app_user",
+  "whatChanged": "Added unique constraint on username",
+  "whyChanged": "Security compliance and single-account restriction",
+  "affectedObject": "auth_token",
+  "remarks": "Verified via Flyway migration"
+}
+```
+
+### DB Change Response (`GET /api/v1/db-changes/{dbChangeId}`)
+
+```json
+{
+  "success": true,
+  "message": "Database change retrieved successfully",
+  "data": {
+    "dbChangeId": 1,
+    "dbChangeCode": "DB-000001",
+    "workLogId": 1,
+    "workLogCode": "WL-000001",
+    "workDate": "2026-11-10",
+    "taskItemId": 10,
+    "taskItemCode": "TASK-000001",
+    "taskItemTitle": "Task management implementation",
+    "projectId": 2,
+    "projectCode": "PRJ-000001",
+    "projectName": "Internal System",
+    "environment": "LOCAL",
+    "databaseName": "PostgreSQL",
+    "objectType": "Table",
+    "objectName": "app_user",
+    "whatChanged": "Added unique constraint on username",
+    "whyChanged": "Security compliance and single-account restriction",
+    "affectedObject": "auth_token",
+    "remarks": "Verified via Flyway migration",
+    "createdAt": "2026-11-10T17:45:00Z",
+    "updatedAt": "2026-11-10T17:45:00Z"
+  }
+}
+```
 
 Rules:
-- Work Log ID is mandatory.
-- Project and Date are derived through the Work Log relationship.
-- One record represents one database object change.
-- Environment belongs to each DB Change independently of the Work Log environment.
+- Work Log ID is mandatory upon creation and immutable during updates.
+- Sequence-based code generation using PostgreSQL `seq_db_change_code` (`DB-%06d`).
+- Project and Task Item context are derived through the Work Log relationship.
+- Allowed environments: `LOCAL`, `UAT`, `LIVE`.
+- Allowed database platforms: `Oracle`, `PostgreSQL`, `MySQL`, `SQL Server`, `MongoDB`, `Other`.
+- Allowed object types: `Table`, `Procedure`, `Function`, `Trigger`, `View`, `Package`, `Cursor`, `Sequence`, `Index`, `Constraint`, `Other`.
+- Required fields: `workLogId`, `environment`, `databaseName`, `objectType`, `objectName`, `whyChanged`.
+- Optional fields: `whatChanged`, `affectedObject`, `remarks`.
+- Historical DB changes remain accessible and editable even when the associated Task Item or Project is inactive.
+- Delete endpoint (`DELETE /db-changes/{id}`) is strictly omitted and prohibited.
 
 ## 10. Dashboard APIs
 

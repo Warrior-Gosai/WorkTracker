@@ -48,6 +48,9 @@ class WorkLogServiceTest {
     @Mock
     private com.devworktracker.codechange.repository.CodeChangeRepository codeChangeRepository;
 
+    @Mock
+    private com.devworktracker.dbchange.repository.DbChangeRepository dbChangeRepository;
+
     @Spy
     private WorkLogMapper workLogMapper = new WorkLogMapper();
 

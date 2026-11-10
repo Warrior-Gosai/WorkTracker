@@ -516,46 +516,69 @@ Route: `/db-changes`
 ### 10.1 List
 
 Columns:
-- DB Change Code.
-- Work Log Code.
-- Date.
-- Project.
-- Environment.
-- Database.
-- Object Type.
-- Object Name.
-- Actions.
+- DB Change Code (link to `/db-changes/:id`).
+- Date (derived workDate).
+- Work Log & Task (Work Log Code and Task Item Code/Title).
+- Environment (LOCAL, UAT, LIVE badge).
+- Database (Database platform).
+- Object Type (Table, Procedure, etc. badge).
+- Object Name (font-mono).
+- Actions (View details, Edit). No delete actions.
 
 Filters:
-- Project.
-- Work Log.
-- Environment.
-- Database.
-- Object Type.
-- Object Name.
-- Date range.
-- Search.
+- Search (multi-field search across codes, names, reasons, remarks).
+- Project dropdown.
+- Task Item dropdown (optionally filtered by project).
+- Environment dropdown.
+- Database Platform dropdown.
+- Object Type dropdown.
+- Date range (`dateFrom` to `dateTo`).
+- Clear / Reset filters.
 
-### 10.2 Create / Edit Form
+### 10.2 Create Form
+
+Route: `/db-changes/new`
 
 Fields:
-- Work Log (required).
-- Environment (required).
-- Database (required).
-- Object Type (required).
-- Object Name (required).
-- What Changed.
-- Why Changed.
-- Affected Object.
-- Remarks.
+- Work Log (required, dropdown displaying code, date, task item, and project; preselection supported via query param).
+- Derived context banner showing selected Work Log date, requirement, Task Item, and Project.
+- Environment (required: LOCAL, UAT, LIVE).
+- Database Platform (required: PostgreSQL, Oracle, MySQL, SQL Server, MongoDB, Other).
+- Object Type (required: Table, Procedure, Function, Trigger, View, Package, Cursor, Sequence, Index, Constraint, Other).
+- Object Name (required, max 200).
+- Why Changed / Business Reason (required).
+- What Changed (optional technical details).
+- Affected Object(s) (optional).
+- Remarks (optional).
 
-Project and Date are populated from the selected Work Log and are read-only.
+### 10.3 Edit Form
 
-One record represents one database object change.
+Route: `/db-changes/:dbChangeId/edit`
 
-### 10.3 Details Screen
+- Read-only context banner showing DB Change Code, Work Log Code/Date, Task Item, and Project (Work Log association and DB Change Code are immutable).
+- Editable fields: Environment, Database Platform, Object Type, Object Name, Why Changed, What Changed, Affected Object, Remarks.
+- Historical DB changes remain editable even when their associated Task Item or Project has become inactive.
+- No delete button or UI controls.
 
-Display all DB Change information and the associated Work Log, Task Item and Project.
+### 10.4 Details Screen
+
+Route: `/db-changes/:dbChangeId`
+
+Display:
+- Header with DB Change Code, Environment badge, Object Type badge, Database badge.
+- Edit DB Change action button.
+- Main Database Object Details Card (Database Platform, Object Type, Object Name, Environment, Created At, Last Updated).
+- Reason & Modification Details Card (Why Changed, What Changed, Affected Object, Remarks).
+- Hierarchy Context Card (Project with link, Task Item with link, Work Log with link, immutability notice).
+- Deletion is strictly prohibited and excluded from the interface.
+
+### 10.5 Work Log Detail Integration
+
+Route: `/work-logs/:workLogId`
+
+- Displays dedicated "Related Database Changes" section with count, tabular listing (DB Change code with link, Environment badge, Database name, Object Type badge, Object Name, Why Changed, View action).
+- Includes "+ Log DB Change" action button linking directly to `/db-changes/new?workLogId=:workLogId` with preselected Work Log context.
+- Preserves existing Related Code Changes section and behavior.
 
 ## 11. Reports & Exports Screen
 

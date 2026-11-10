@@ -80,16 +80,19 @@ public class WorkLogServiceImpl implements WorkLogService {
     private final TaskItemRepository taskItemRepository;
     private final WorkLogMapper workLogMapper;
     private final com.devworktracker.codechange.repository.CodeChangeRepository codeChangeRepository;
+    private final com.devworktracker.dbchange.repository.DbChangeRepository dbChangeRepository;
 
     public WorkLogServiceImpl(
             WorkLogRepository workLogRepository,
             TaskItemRepository taskItemRepository,
             WorkLogMapper workLogMapper,
-            com.devworktracker.codechange.repository.CodeChangeRepository codeChangeRepository) {
+            com.devworktracker.codechange.repository.CodeChangeRepository codeChangeRepository,
+            com.devworktracker.dbchange.repository.DbChangeRepository dbChangeRepository) {
         this.workLogRepository = workLogRepository;
         this.taskItemRepository = taskItemRepository;
         this.workLogMapper = workLogMapper;
         this.codeChangeRepository = codeChangeRepository;
+        this.dbChangeRepository = dbChangeRepository;
     }
 
     @Override
@@ -280,6 +283,12 @@ public class WorkLogServiceImpl implements WorkLogService {
                     .map(com.devworktracker.codechange.entity.CodeChange::getCodeChangeId)
                     .toList();
             response.setCodeChangeIds(codeChangeIds);
+        }
+        if (dbChangeRepository != null) {
+            List<Long> dbChangeIds = dbChangeRepository.findByWorkLogId(workLogId).stream()
+                    .map(com.devworktracker.dbchange.entity.DbChange::getDbChangeId)
+                    .toList();
+            response.setDbChangeIds(dbChangeIds);
         }
         return response;
     }

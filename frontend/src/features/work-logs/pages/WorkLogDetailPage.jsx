@@ -14,13 +14,30 @@ import {
   HelpCircle,
   AlertTriangle,
   Lightbulb,
+  Database,
+  GitCommit,
+  Plus,
+  ExternalLink,
 } from 'lucide-react';
 import { useWorkLogDetails } from '../hooks/useWorkLogs';
+import { useCodeChanges } from '../../code-changes/hooks/useCodeChanges';
+import { useDbChanges } from '../../db-changes/hooks/useDbChanges';
 import { WORK_TYPES, WORK_ENVIRONMENTS, WORK_STATUSES } from '../constants/workLogConstants';
 
 export const WorkLogDetailPage = () => {
   const { workLogId } = useParams();
   const { data: workLog, isLoading, isError, error } = useWorkLogDetails(workLogId);
+  const { data: codeChangesData } = useCodeChanges({
+    workLogId: workLogId ? Number(workLogId) : undefined,
+    size: 50,
+  });
+  const { data: dbChangesData } = useDbChanges({
+    workLogId: workLogId ? Number(workLogId) : undefined,
+    size: 50,
+  });
+
+  const codeChanges = codeChangesData?.content || [];
+  const dbChanges = dbChangesData?.content || [];
 
   const getWorkTypeLabel = (val) => {
     const found = WORK_TYPES.find((t) => t.value === val);
@@ -361,6 +378,170 @@ export const WorkLogDetailPage = () => {
           <span>Created: {formatTimestamp(workLog.createdAt)}</span>
           <span>Last Updated: {formatTimestamp(workLog.updatedAt)}</span>
         </div>
+      </div>
+
+      {/* Related Code Changes Card */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <GitCommit className="w-5 h-5 text-blue-600" />
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">
+                Related Code Changes ({codeChanges.length})
+              </h2>
+              <p className="text-xs text-slate-500">
+                SVN revisions and uncommitted modifications attached to this work log.
+              </p>
+            </div>
+          </div>
+          <Link
+            to={`/code-changes/new?workLogId=${workLogId}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Log Code Change</span>
+          </Link>
+        </div>
+
+        {codeChanges.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-400 italic">
+            No code changes recorded for this work log.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200 font-semibold text-slate-600 uppercase tracking-wider">
+                  <th scope="col" className="py-3 px-4">Code Change</th>
+                  <th scope="col" className="py-3 px-4">Status</th>
+                  <th scope="col" className="py-3 px-4">SVN Commit</th>
+                  <th scope="col" className="py-3 px-4">Environment</th>
+                  <th scope="col" className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {codeChanges.map((cc) => (
+                  <tr key={cc.codeChangeId} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-3 px-4 font-mono font-medium text-blue-600">
+                      <Link to={`/code-changes/${cc.codeChangeId}`} className="hover:underline">
+                        {cc.codeChangeCode}
+                      </Link>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                        cc.changeStatus === 'COMMITTED'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}>
+                        {cc.changeStatus}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-600">
+                      {cc.svnCommitId || '—'}
+                    </td>
+                    <td className="py-3 px-4">
+                      {cc.environment}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <Link
+                        to={`/code-changes/${cc.codeChangeId}`}
+                        className="text-blue-600 hover:underline font-medium inline-flex items-center gap-1"
+                      >
+                        <span>View</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Related Database Changes Card */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <Database className="w-5 h-5 text-blue-600" />
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">
+                Related Database Changes ({dbChanges.length})
+              </h2>
+              <p className="text-xs text-slate-500">
+                Database schema, table, trigger or script modifications attached to this work log.
+              </p>
+            </div>
+          </div>
+          <Link
+            to={`/db-changes/new?workLogId=${workLogId}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Log DB Change</span>
+          </Link>
+        </div>
+
+        {dbChanges.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-400 italic">
+            No database changes recorded for this work log.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200 font-semibold text-slate-600 uppercase tracking-wider">
+                  <th scope="col" className="py-3 px-4">DB Change</th>
+                  <th scope="col" className="py-3 px-4">Environment</th>
+                  <th scope="col" className="py-3 px-4">Database</th>
+                  <th scope="col" className="py-3 px-4">Object Type</th>
+                  <th scope="col" className="py-3 px-4">Object Name</th>
+                  <th scope="col" className="py-3 px-4">Why Changed</th>
+                  <th scope="col" className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {dbChanges.map((dbc) => (
+                  <tr key={dbc.dbChangeId} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-3 px-4 font-mono font-medium text-blue-600">
+                      <Link to={`/db-changes/${dbc.dbChangeId}`} className="hover:underline">
+                        {dbc.dbChangeCode}
+                      </Link>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                        {dbc.environment}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-medium text-slate-800">
+                      {dbc.databaseName}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                        {dbc.objectType}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-800">
+                      {dbc.objectName}
+                    </td>
+                    <td className="py-3 px-4 max-w-xs truncate text-slate-600" title={dbc.whyChanged}>
+                      {dbc.whyChanged}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <Link
+                        to={`/db-changes/${dbc.dbChangeId}`}
+                        className="text-blue-600 hover:underline font-medium inline-flex items-center gap-1"
+                      >
+                        <span>View</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

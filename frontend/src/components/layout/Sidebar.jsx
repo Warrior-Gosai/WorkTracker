@@ -56,7 +56,7 @@ const navItems = [
     name: 'DB Changes',
     path: ROUTES.DB_CHANGES,
     icon: Database,
-    isAvailable: false,
+    isAvailable: true,
   },
   {
     name: 'Reports & Exports',

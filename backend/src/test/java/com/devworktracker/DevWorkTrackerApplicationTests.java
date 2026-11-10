@@ -37,6 +37,9 @@ class DevWorkTrackerApplicationTests {
     @MockitoBean
     private com.devworktracker.codechange.repository.CodeChangeFileRepository codeChangeFileRepository;
 
+    @MockitoBean
+    private com.devworktracker.dbchange.repository.DbChangeRepository dbChangeRepository;
+
     @Test
     void contextLoads() {
     }
