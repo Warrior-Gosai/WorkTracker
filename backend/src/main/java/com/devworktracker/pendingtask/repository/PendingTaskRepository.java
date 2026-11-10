@@ -28,6 +28,13 @@ public interface PendingTaskRepository extends JpaRepository<PendingTask, Long>,
     @EntityGraph(attributePaths = {"project"})
     List<PendingTask> findByProjectId(Long projectId);
 
+    long countByStatus(String status);
+
+    long countByDueDateBeforeAndStatusNotIn(java.time.LocalDate date, java.util.Collection<String> statuses);
+
+    @EntityGraph(attributePaths = {"project"})
+    List<PendingTask> findAllBy(Pageable pageable);
+
     @Override
     @EntityGraph(attributePaths = {"project"})
     Page<PendingTask> findAll(Specification<PendingTask> spec, Pageable pageable);

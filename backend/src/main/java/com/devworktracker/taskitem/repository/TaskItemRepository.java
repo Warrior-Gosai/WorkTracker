@@ -17,5 +17,18 @@ public interface TaskItemRepository extends JpaRepository<TaskItem, Long>, JpaSp
     Optional<TaskItem> findByTaskItemCode(String taskItemCode);
 
     Optional<TaskItem> findByTaskItemIdAndIsActive(Long taskItemId, Short isActive);
+
+    long countByIsActive(Short isActive);
+
+    long countByIsActiveAndStatusIn(Short isActive, java.util.Collection<String> statuses);
+
+    long countByProjectIdAndIsActive(Long projectId, Short isActive);
+
+    long countByProjectIdAndIsActiveAndStatusIn(Long projectId, Short isActive, java.util.Collection<String> statuses);
+
+    long countByProjectIdAndIsActiveAndStatus(Long projectId, Short isActive, String status);
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"project"})
+    java.util.List<TaskItem> findByIsActive(Short isActive, org.springframework.data.domain.Pageable pageable);
 }
 

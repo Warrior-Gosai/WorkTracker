@@ -15,5 +15,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, JpaSpec
     Long getNextProjectCodeSequence();
 
     Optional<Project> findByProjectCode(String projectCode);
+
+    long countByStatus(Short status);
+
+    java.util.List<Project> findAllBy(org.springframework.data.domain.Pageable pageable);
 }
 

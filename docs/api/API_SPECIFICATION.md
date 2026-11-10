@@ -1258,40 +1258,179 @@ Base path: `/dashboard`
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/dashboard/summary` | Dashboard Cards |
-| GET | `/dashboard/work-summary` | Work Summary |
-| GET | `/dashboard/project-summary` | Project Summary |
-| GET | `/dashboard/pending-summary` | Pending Task Summary |
-| GET | `/dashboard/recent-activities` | Recent Activities |
+| GET | `/dashboard/summary` | Overall Dashboard Metric Cards |
+| GET | `/dashboard/work-summary` | Work Log Summary, Total Hours & Chart Data |
+| GET | `/dashboard/project-summary` | Project Breakdown & Task Completion Progress |
+| GET | `/dashboard/pending-summary` | Pending Task Status Breakdown & Overdue Counts |
+| GET | `/dashboard/recent-activities` | Chronological Feed of Recent Engineering Activities |
 
-### Summary response
+### 10.1 Overall Summary (`GET /api/v1/dashboard/summary`)
+
+Response (HTTP 200 OK):
 
 ```json
 {
-  "totalProjects": 5,
-  "activeProjects": 4,
-  "totalTaskItems": 80,
-  "openTaskItems": 20,
-  "totalWorkLogs": 150,
-  "totalPendingTasks": 12,
-  "overduePendingTasks": 3,
-  "uncommittedCodeChanges": 4
+  "success": true,
+  "message": "Dashboard summary retrieved successfully",
+  "data": {
+    "totalProjects": 5,
+    "activeProjects": 4,
+    "totalTaskItems": 80,
+    "openTaskItems": 20,
+    "totalWorkLogs": 150,
+    "totalPendingTasks": 12,
+    "overduePendingTasks": 3,
+    "uncommittedCodeChanges": 4
+  },
+  "timestamp": "2026-11-10T18:45:00Z"
 }
 ```
 
-Work Summary query parameters:
-- `fromDate`
-- `toDate`
-- `projectId`
+Metric Definitions:
+- `totalProjects`: Total count of all projects in the system.
+- `activeProjects`: Count of projects where `status = 1`.
+- `totalTaskItems`: Total count of active task items (`is_active = 1`).
+- `openTaskItems`: Count of active task items in open/active workflow (`is_active = 1 AND status IN ('OPEN', 'IN_PROGRESS', 'ON_HOLD')`). Completed and cancelled tasks are strictly excluded.
+- `totalWorkLogs`: Total count of all recorded work logs.
+- `totalPendingTasks`: Total count of all pending tasks.
+- `overduePendingTasks`: Count of pending tasks where `due_date < CURRENT_DATE` and status is neither `COMPLETED` nor `CANCELLED`.
+- `uncommittedCodeChanges`: Count of code changes where `change_status = 'UNCOMMITTED'`.
 
-Work Summary should provide:
-- Total Work Logs.
-- Total calculated hours.
-- Completed Work Logs.
-- In-progress Work Logs.
-- Blocked Work Logs.
+### 10.2 Work Summary (`GET /api/v1/dashboard/work-summary`)
 
-Dashboard values must be calculated from existing business data. Do not create dashboard persistence tables.
+Query Parameters:
+- `dateFrom` / `fromDate` (LocalDate, `yyyy-MM-dd`): Filter work logs with `work_date >= dateFrom`.
+- `dateTo` / `toDate` (LocalDate, `yyyy-MM-dd`): Filter work logs with `work_date <= dateTo`.
+- `projectId` (BIGINT): Filter work logs belonging to task items under this project.
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Work summary retrieved successfully",
+  "data": {
+    "totalWorkLogs": 10,
+    "totalHours": 45.50,
+    "completedWorkLogs": 6,
+    "inProgressWorkLogs": 3,
+    "blockedWorkLogs": 1,
+    "onHoldWorkLogs": 0,
+    "dailySummaries": [
+      {
+        "date": "2026-11-09",
+        "hours": 8.00,
+        "workLogsCount": 2
+      },
+      {
+        "date": "2026-11-10",
+        "hours": 7.50,
+        "workLogsCount": 1
+      }
+    ]
+  },
+  "timestamp": "2026-11-10T18:45:00Z"
+}
+```
+
+Duration & Aggregation Rules:
+- `totalHours` is calculated dynamically by summing elapsed durations for all work logs having both non-null `start_time` and `end_time`.
+- Overnight work periods (e.g. `22:00` to `02:00`) are accurately calculated across midnight.
+- Each duration is rounded to 2 decimal places using `HALF_UP` rounding.
+- Work logs without recorded time intervals are counted in `totalWorkLogs` but do not contribute fabricated hours.
+
+### 10.3 Project Summary (`GET /api/v1/dashboard/project-summary`)
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Project summary retrieved successfully",
+  "data": [
+    {
+      "projectId": 1,
+      "projectCode": "PRJ-000001",
+      "projectName": "FlowTrack Core Platform",
+      "projectStatus": 1,
+      "totalTaskItems": 20,
+      "openTaskItems": 5,
+      "completedTaskItems": 12,
+      "totalWorkLogs": 45
+    }
+  ],
+  "timestamp": "2026-11-10T18:45:00Z"
+}
+```
+
+Rules:
+- Sorted by active projects first (`status DESC`), then by `projectCode ASC`.
+- Task counts query active tasks (`is_active = 1`).
+- Avoids join duplication by running targeted repository count aggregations.
+
+### 10.4 Pending Task Summary (`GET /api/v1/dashboard/pending-summary`)
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Pending task summary retrieved successfully",
+  "data": {
+    "pending": 5,
+    "inProgress": 3,
+    "onHold": 2,
+    "completed": 7,
+    "cancelled": 1,
+    "overdue": 2,
+    "total": 18
+  },
+  "timestamp": "2026-11-10T18:45:00Z"
+}
+```
+
+### 10.5 Recent Activities (`GET /api/v1/dashboard/recent-activities`)
+
+Query Parameters:
+- `limit` (Integer, Default: 10, Max: 50): Number of recent activity items to return.
+
+Response (HTTP 200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Recent activities retrieved successfully",
+  "data": [
+    {
+      "activityType": "PENDING_TASK",
+      "recordId": 6,
+      "recordCode": "PT-000001",
+      "title": "Review database indexes and vacuum configurations",
+      "projectName": "FlowTrack Core Platform",
+      "activityDate": "2026-11-10T18:30:00Z",
+      "navigationTarget": "/pending-tasks/6"
+    },
+    {
+      "activityType": "DB_CHANGE",
+      "recordId": 5,
+      "recordCode": "DB-000001",
+      "title": "PostgreSQL Table: app_user",
+      "projectName": "FlowTrack Core Platform",
+      "activityDate": "2026-11-10T18:25:00Z",
+      "navigationTarget": "/db-changes/5"
+    }
+  ],
+  "timestamp": "2026-11-10T18:45:00Z"
+}
+```
+
+Activity Timestamp Choices:
+- `PROJECT`: `updatedAt` (or `createdAt` if not updated).
+- `TASK_ITEM`: `updatedAt` (or `createdAt`).
+- `WORK_LOG`: `updatedAt` (or `createdAt`).
+- `CODE_CHANGE`: `changeDatetime` (or `updatedAt` / `createdAt`).
+- `DB_CHANGE`: `updatedAt` (or `createdAt`).
+- `PENDING_TASK`: `updatedAt` (or `createdAt`).
 
 ## 11. Reports and Export APIs
 

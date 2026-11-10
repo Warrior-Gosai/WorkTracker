@@ -88,62 +88,61 @@ Behaviour:
 
 Route: `/dashboard`
 
-Purpose: Show a quick overview of engineering work.
+Purpose: Centralized engineering overview, high-level metrics, work hour trends, project performance, pending tasks, and recent activities.
 
 ### 4.1 Summary Cards
 
-Display:
-1. Total Projects.
-2. Active Projects.
-3. Total Task Items.
-4. Open Task Items.
-5. Total Work Logs.
-6. Total Pending Tasks.
-7. Overdue Pending Tasks.
-8. Uncommitted Code Changes.
+Eight interactive metric cards linking to corresponding filtered list pages:
+1. **Total Projects**: Total count of all projects (`/projects`).
+2. **Active Projects**: Count of active projects with status = 1 (`/projects`).
+3. **Total Task Items**: Count of active task items (`/task-items`).
+4. **Open Task Items**: Count of active task items with open workflow statuses (`OPEN`, `IN_PROGRESS`, `ON_HOLD`) (`/task-items`).
+5. **Total Work Logs**: Count of all logged development sessions (`/work-logs`).
+6. **Total Pending Tasks**: Count of independent reminders and follow-up items (`/pending-tasks`).
+7. **Overdue Pending Tasks**: Count of overdue pending tasks with prominent alert highlight (`/pending-tasks?overdue=true`).
+8. **Uncommitted Code Changes**: Count of code changes with uncommitted status (`/code-changes`).
 
-### 4.2 Work Summary
+### 4.2 Quick Action Shortcuts
 
-Display:
-- Total Work Logs.
-- Total calculated hours.
-- Completed Work Logs.
-- In-progress Work Logs.
-- Blocked Work Logs.
+One-click navigation shortcuts to record new development items:
+- **Log Work**: Navigates to `/work-logs/new`.
+- **New Task Item**: Navigates to `/task-items`.
+- **New Pending Task**: Navigates to `/pending-tasks/new`.
+- **Log Code Change**: Navigates to `/code-changes/new`.
+- **Log DB Change**: Navigates to `/db-changes/new`.
+- **New Project**: Navigates to `/projects`.
 
-Allow date-range and project filtering.
+### 4.3 Work & Hours Summary
 
-### 4.3 Project Summary
+Provides comprehensive time and status tracking:
+- **Filters**: Project select dropdown, Start Date picker, End Date picker, and clear filters action.
+- **Key Metrics**: Total Hours (formatted to 2 decimal places), Total Logs count, Completed count, In Progress count, Blocked count, and On Hold count.
+- **Visualizations**:
+  - **Daily Logged Hours**: Recharts bar chart displaying daily elapsed hours per date across the filtered interval.
+  - **Status Breakdown**: Recharts donut chart illustrating the distribution between Completed, In Progress, Blocked, and On Hold work logs.
+- Empty states displayed when no work logs match the chosen date/project filters.
 
-Display:
-- Project name.
-- Task Item count.
-- Work Log count.
-- Pending Task count.
+### 4.4 Project Performance & Breakdown
 
-### 4.4 Pending Overview
+Table summarizing project health and progress:
+- Project Code and Project Name (linking to Project Details `/projects/:projectId`).
+- Status Badge: Active or Inactive.
+- Task Progress: Completed / Total tasks counter, percentage done, and responsive progress bar.
+- Open tasks counter.
+- Associated Work Logs counter.
 
-Display:
-- Pending Tasks.
-- Overdue Tasks.
-- Due dates.
-- Priority and status.
+### 4.5 Pending Task Reminders
 
-### 4.5 Recent Activity
+Status overview and deadline monitoring:
+- Overdue Alert Banner: Prominently displayed when overdue tasks exist, linking directly to overdue filter.
+- Status Grid: Interactive cards for Pending, In Progress, On Hold, Completed, Cancelled, and Total Tasks, linking to the filtered list.
 
-Display recent:
-- Work Logs.
-- Code Changes.
-- DB Changes.
-- Pending Task updates.
+### 4.6 Recent Engineering Activity Feed
 
-### 4.6 Quick Actions
-
-- New Work Log.
-- New Task Item.
-- New Pending Task.
-- New Code Change.
-- New DB Change.
+Chronological activity stream aggregating items across all six modules:
+- Distinct iconography and color badges for Project, Task Item, Work Log, Code Change, DB Change, and Pending Task.
+- Record Code, Title, Associated Project, and relative timestamp (e.g., "5m ago", "2h ago").
+- Direct navigation links to record detail views (`/projects/:id`, `/task-items/:id`, `/work-logs/:id`, `/code-changes/:id`, `/db-changes/:id`, `/pending-tasks/:id`).
 
 ## 5. Projects Screen
 

@@ -20,9 +20,9 @@ The application will provide structured data entry, searchable history, dashboar
 - Backend API design: Defined
 - Frontend design: Defined
 - Security design: Defined
-- Development: In progress (Phases 1, 2, 3, 4, 5, 6, 7, 8, 9 & 10 completed)
+- Development: In progress (Phases 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 & 11 completed)
 
-**Current Phase:** Phase 11 — Dashboard
+**Current Phase:** Phase 12 — Reports & Excel Exports
 
 ## 3. Approved Technology Stack
 
@@ -161,7 +161,7 @@ Use Flyway for all database schema changes.
 
 ## 11. Current Pending Work
 
-- Implement Phase 11: Dashboard Module.
+- Implement Phase 12: Reports & Excel Exports Module.
 - Connect local PostgreSQL instance with live credentials.
 
 ## 12. Current Development State
@@ -226,3 +226,17 @@ Use Flyway for all database schema changes.
   - Frontend Pending Tasks listing (`/pending-tasks`), Details view (`/pending-tasks/:pendingTaskId`), Create page (`/pending-tasks/new`) with active-only project dropdown, Edit page (`/pending-tasks/:pendingTaskId/edit`) with read-only project context banner, and Quick Status Modal. Sidebar updated.
   - 145/145 backend automated tests passing (25 auth + 22 project + 22 task item + 19 work log + 19 code change + 20 db change + 18 pending task tests).
   - 104/104 frontend unit tests passing across 14 test files, production build verified clean.
+- Phase 11 (Dashboard Module) completed and tested:
+  - Backend `com.devworktracker.dashboard` package with DTOs, service, and controller endpoints.
+  - REST endpoints for Summary (`GET /api/v1/dashboard/summary`), Work Summary & Charts (`GET /api/v1/dashboard/work-summary`), Project Breakdown (`GET /api/v1/dashboard/project-summary`), Pending Task Status Breakdown (`GET /api/v1/dashboard/pending-summary`), and Recent Activities Feed (`GET /api/v1/dashboard/recent-activities`).
+  - Strict metric definitions:
+    - Active projects: `status = 1`.
+    - Total task items: active task items (`is_active = 1`).
+    - Open task items: active tasks in open workflow (`is_active = 1 AND status IN ('OPEN', 'IN_PROGRESS', 'ON_HOLD')`). Cancelled and completed tasks are excluded.
+    - Overdue pending tasks: `due_date < today AND status NOT IN ('COMPLETED', 'CANCELLED')`.
+    - Uncommitted code changes: `change_status = 'UNCOMMITTED'`.
+    - Total hours: computed from non-null `start_time` and `end_time` using half-up 2-decimal rounding and overnight duration rules.
+  - Database efficiency: DB-level counts, Spring Data JPA specifications for date/project filtering, and bounded recent activity queries across all 6 modules sorted chronologically.
+  - Frontend integration: Replaced placeholder dashboard with complete production `DashboardPage`, `SummaryCards` (8 responsive cards), `QuickActions` (6 shortcuts), `WorkSummary` with Recharts bar and donut charts, `ProjectSummary` progress table, `PendingTaskSummary` status cards, and `RecentActivities` feed with route navigation.
+  - 157/157 backend automated tests passing (25 auth + 22 project + 22 task item + 19 work log + 19 code change + 20 db change + 18 pending task + 12 dashboard tests).
+  - 109/109 frontend unit tests passing across 15 test files, production build verified clean.

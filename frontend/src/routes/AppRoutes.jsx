@@ -6,7 +6,7 @@ import SetupRoute from './SetupRoute';
 import AppLayout from '../components/layout/AppLayout';
 import LoginPage from '../features/auth/pages/LoginPage';
 import SetupPage from '../features/auth/pages/SetupPage';
-import DashboardPlaceholderPage from '../features/dashboard/pages/DashboardPlaceholderPage';
+import DashboardPage from '../features/dashboard/pages/DashboardPage';
 import ProjectListPage from '../features/projects/pages/ProjectListPage';
 import ProjectDetailPage from '../features/projects/pages/ProjectDetailPage';
 import TaskItemListPage from '../features/task-items/pages/TaskItemListPage';
@@ -45,7 +45,7 @@ export const AppRoutes = () => {
       {/* Protected Routes inside AppLayout */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path={ROUTES.DASHBOARD} element={<DashboardPlaceholderPage />} />
+          <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
           <Route path={ROUTES.PROJECTS} element={<ProjectListPage />} />
           <Route path={`${ROUTES.PROJECTS}/:projectId`} element={<ProjectDetailPage />} />
           <Route path={ROUTES.TASK_ITEMS} element={<TaskItemListPage />} />

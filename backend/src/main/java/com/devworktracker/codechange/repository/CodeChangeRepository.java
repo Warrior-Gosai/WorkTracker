@@ -30,6 +30,11 @@ public interface CodeChangeRepository extends JpaRepository<CodeChange, Long>, J
 
     List<CodeChange> findByWorkLogId(Long workLogId);
 
+    long countByChangeStatus(String changeStatus);
+
+    @EntityGraph(attributePaths = {"workLog", "workLog.taskItem", "workLog.taskItem.project", "files"})
+    List<CodeChange> findAllBy(Pageable pageable);
+
     @Override
     @EntityGraph(attributePaths = {"workLog", "workLog.taskItem", "workLog.taskItem.project", "files"})
     Page<CodeChange> findAll(Specification<CodeChange> spec, Pageable pageable);
