@@ -29,6 +29,9 @@ public interface WorkLogRepository extends JpaRepository<WorkLog, Long>, JpaSpec
     @EntityGraph(attributePaths = {"taskItem", "taskItem.project"})
     Page<WorkLog> findAll(Specification<WorkLog> spec, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"taskItem", "taskItem.project"})
+    java.util.List<WorkLog> findAll(Specification<WorkLog> spec, org.springframework.data.domain.Sort sort);
+
     @Override
     @EntityGraph(attributePaths = {"taskItem", "taskItem.project"})
     Optional<WorkLog> findById(Long id);

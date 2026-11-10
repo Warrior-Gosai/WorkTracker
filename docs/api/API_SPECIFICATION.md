@@ -1434,28 +1434,87 @@ Activity Timestamp Choices:
 
 ## 11. Reports and Export APIs
 
-Base path: `/exports`
+Base path: `/exports` (full path `/api/v1/exports`)
 
-| Method | Endpoint | Output |
-|---|---|---|
-| GET | `/exports/work-logs` | Daily Work Log XLSX |
-| GET | `/exports/db-changes` | DB Change Log XLSX |
-| GET | `/exports/code-changes` | Code File Change Log XLSX |
-| GET | `/exports/all` | ZIP containing all three workbooks |
+Export endpoints stream binary `.xlsx` workbooks and `.zip` archives directly to the client. Responses include standard HTTP headers:
+- `Content-Type`: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` (for Excel) or `application/zip` (for ZIP archives)
+- `Content-Disposition`: `attachment; filename="<filename>"`
 
-Optional export filters:
-- `fromDate`
-- `toDate`
-- `projectId`
+### 11.1 Endpoints
+
+| Method | Endpoint | Query Parameters | Response Body | Default Filename |
+|---|---|---|---|---|
+| GET | `/exports/work-logs` | `scope`, `fromDate`, `toDate`, `projectId`, `taskItemId`, `workType`, `status`, `technologyArea` | Binary XLSX | `01_Daily_Work_Log.xlsx` |
+| GET | `/exports/db-changes` | `scope`, `fromDate`, `toDate`, `projectId`, `environment`, `databaseName`, `objectType` | Binary XLSX | `02_DB_Change_Log.xlsx` |
+| GET | `/exports/code-changes` | `scope`, `fromDate`, `toDate`, `projectId`, `changeStatus`, `layer`, `technology` | Binary XLSX | `03_Code_File_Change_Log.xlsx` |
+| GET | `/exports/all` | `scope`, `fromDate`, `toDate`, `projectId` | Binary ZIP | `DevWork_Tracker_Reports.zip` |
+
+### 11.2 Export Scope Parameter
+
+All export endpoints support the `scope` parameter:
+- `scope=all`: Exports the complete historical dataset for the module, ignoring date and list filters.
+- `scope=filtered` (default): Applies the provided query filters across all matching records (without page size limits).
+- Supplying an unrecognized scope string returns HTTP `400 Bad Request`.
+
+### 11.3 Query Filters by Endpoint
+
+1. **Daily Work Log (`/exports/work-logs`)**:
+   - `scope`: `all` | `filtered`
+   - `fromDate`: `YYYY-MM-DD` (inclusive start date against `work_date`)
+   - `toDate`: `YYYY-MM-DD` (inclusive end date against `work_date`)
+   - `projectId`: numeric Project ID (filtered through `TaskItem.project.id`)
+   - `taskItemId`: numeric Task Item ID
+   - `workType`: enum string (`CODING`, `DEBUGGING`, etc.)
+   - `status`: enum string (`COMPLETED`, `IN_PROGRESS`, etc.)
+   - `technologyArea`: substring search in technology/area
+
+2. **DB Change Log (`/exports/db-changes`)**:
+   - `scope`: `all` | `filtered`
+   - `fromDate`: `YYYY-MM-DD` (inclusive start date against parent `WorkLog.work_date`)
+   - `toDate`: `YYYY-MM-DD` (inclusive end date against parent `WorkLog.work_date`)
+   - `projectId`: numeric Project ID (filtered through `WorkLog.TaskItem.project.id`)
+   - `environment`: string environment name
+   - `databaseName`: string database name
+   - `objectType`: string database object type
+
+3. **Code Change Log (`/exports/code-changes`)**:
+   - `scope`: `all` | `filtered`
+   - `fromDate`: `YYYY-MM-DD` (inclusive start date against `change_datetime`)
+   - `toDate`: `YYYY-MM-DD` (inclusive end date against `change_datetime`)
+   - `projectId`: numeric Project ID (filtered through `WorkLog.TaskItem.project.id`)
+   - `changeStatus`: `COMMITTED` | `UNCOMMITTED`
+   - `layer`: child file layer filter
+   - `technology`: child file technology filter
+
+4. **All Reports ZIP (`/exports/all`)**:
+   - `scope`: `all` | `filtered`
+   - `fromDate`: `YYYY-MM-DD`
+   - `toDate`: `YYYY-MM-DD`
+   - `projectId`: numeric Project ID
+
+### 11.4 Response and Error Specifications
+
+**Success Response (HTTP 200 OK):**
+- Binary payload containing the generated XLSX or ZIP file.
+- Header `Content-Disposition: attachment; filename="<filename>"`.
+
+**Error Response (HTTP 400 Bad Request / 500 Internal Server Error):**
+When validation fails (e.g., `fromDate` is after `toDate`, or invalid `scope`), the server returns `application/json`:
+```json
+{
+  "success": false,
+  "message": "Invalid export scope: 'invalid'. Allowed values are 'all' or 'filtered'.",
+  "data": null,
+  "timestamp": "2026-11-10T19:00:00Z"
+}
+```
 
 Export rules:
-- Use Apache POI.
-- Preserve original workbook columns and relevant formatting.
-- Include headers even when no records match.
-- Preserve original sheet names and required structure.
-- Do not modify database data.
-- Return correct file content type and download filename.
-- Aggregate multiple Code Change File records into one Code Change export row.
+- Built with Apache POI 5.3.0.
+- Preserves original workbook columns, sheet names, Instructions sheets, column widths, freeze panes, autofilters, and cell styles.
+- Generates valid workbooks with headers and instructions even when 0 records match filters.
+- Code Change exports aggregate multiple child file records into newline-delimited strings within one row per `CodeChange`.
+- Read-only operations: never modifies database records.
 
 ## 12. Pagination Standards
 

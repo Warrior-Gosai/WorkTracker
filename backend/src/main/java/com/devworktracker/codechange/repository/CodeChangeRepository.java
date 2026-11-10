@@ -30,6 +30,8 @@ public interface CodeChangeRepository extends JpaRepository<CodeChange, Long>, J
 
     List<CodeChange> findByWorkLogId(Long workLogId);
 
+    List<CodeChange> findByWorkLogIdIn(List<Long> workLogIds);
+
     long countByChangeStatus(String changeStatus);
 
     @EntityGraph(attributePaths = {"workLog", "workLog.taskItem", "workLog.taskItem.project", "files"})
@@ -38,6 +40,9 @@ public interface CodeChangeRepository extends JpaRepository<CodeChange, Long>, J
     @Override
     @EntityGraph(attributePaths = {"workLog", "workLog.taskItem", "workLog.taskItem.project", "files"})
     Page<CodeChange> findAll(Specification<CodeChange> spec, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"workLog", "workLog.taskItem", "workLog.taskItem.project", "files"})
+    List<CodeChange> findAll(Specification<CodeChange> spec, org.springframework.data.domain.Sort sort);
 
     @Override
     @EntityGraph(attributePaths = {"workLog", "workLog.taskItem", "workLog.taskItem.project", "files"})

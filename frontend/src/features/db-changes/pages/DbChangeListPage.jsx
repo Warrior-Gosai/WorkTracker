@@ -9,12 +9,15 @@ import {
   ChevronRight,
   Database,
   Calendar,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useDbChanges } from '../hooks/useDbChanges';
 import { DbChangeTable } from '../components/DbChangeTable';
 import { DB_ENVIRONMENTS, DATABASE_NAMES, OBJECT_TYPES } from '../constants/dbChangeConstants';
 import { projectService } from '../../projects/services/projectService';
 import { taskItemService } from '../../task-items/services/taskItemService';
+import { ExportDialog } from '../../reports/components/ExportDialog';
+import { REPORT_TYPES } from '../../reports/hooks/useExport';
 
 export const DbChangeListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,6 +29,7 @@ export const DbChangeListPage = () => {
   const [selectedObjectType, setSelectedObjectType] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -154,6 +158,15 @@ export const DbChangeListPage = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsExportOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>Export Excel</span>
+          </button>
+
           <Link
             to="/db-changes/new"
             className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-xs"
@@ -401,6 +414,24 @@ export const DbChangeListPage = () => {
           )}
         </div>
       )}
+
+      {/* Export Dialog */}
+      <ExportDialog
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        reportType={REPORT_TYPES.DB_CHANGE_LOG}
+        initialScope={hasActiveFilters ? 'filtered' : 'all'}
+        initialFilters={{
+          search: debouncedSearch,
+          projectId: selectedProjectId,
+          taskItemId: selectedTaskItemId,
+          environment: selectedEnvironment,
+          databaseName: selectedDatabase,
+          objectType: selectedObjectType,
+          dateFrom,
+          dateTo,
+        }}
+      />
     </div>
   );
 };

@@ -10,6 +10,7 @@ import {
   GitCommit,
   Calendar,
   FileCode2,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useCodeChanges } from '../hooks/useCodeChanges';
 import { CodeChangeTable } from '../components/CodeChangeTable';
@@ -17,6 +18,8 @@ import { CommitSearchModal } from '../components/CommitSearchModal';
 import { CHANGE_STATUSES, CODE_ENVIRONMENTS } from '../constants/codeChangeConstants';
 import { projectService } from '../../projects/services/projectService';
 import { taskItemService } from '../../task-items/services/taskItemService';
+import { ExportDialog } from '../../reports/components/ExportDialog';
+import { REPORT_TYPES } from '../../reports/hooks/useExport';
 
 export const CodeChangeListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,6 +30,7 @@ export const CodeChangeListPage = () => {
   const [selectedEnvironment, setSelectedEnvironment] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -153,6 +157,15 @@ export const CodeChangeListPage = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsExportOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>Export Excel</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsCommitSearchOpen(true)}
@@ -391,6 +404,23 @@ export const CodeChangeListPage = () => {
       <CommitSearchModal
         isOpen={isCommitSearchOpen}
         onClose={() => setIsCommitSearchOpen(false)}
+      />
+
+      {/* Export Dialog */}
+      <ExportDialog
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        reportType={REPORT_TYPES.CODE_CHANGE_LOG}
+        initialScope={hasActiveFilters ? 'filtered' : 'all'}
+        initialFilters={{
+          search: debouncedSearch,
+          projectId: selectedProjectId,
+          taskItemId: selectedTaskItemId,
+          changeStatus: selectedStatus,
+          environment: selectedEnvironment,
+          dateFrom,
+          dateTo,
+        }}
       />
     </div>
   );

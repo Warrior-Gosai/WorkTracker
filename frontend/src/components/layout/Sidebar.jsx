@@ -62,7 +62,7 @@ const navItems = [
     name: 'Reports & Exports',
     path: ROUTES.REPORTS,
     icon: FileSpreadsheet,
-    isAvailable: false,
+    isAvailable: true,
   },
   {
     name: 'Settings',

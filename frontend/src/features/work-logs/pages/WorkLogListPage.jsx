@@ -9,12 +9,15 @@ import {
   ChevronRight,
   ClipboardList,
   Calendar,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useWorkLogs } from '../hooks/useWorkLogs';
 import { WorkLogTable } from '../components/WorkLogTable';
 import { WORK_TYPES, WORK_ENVIRONMENTS, WORK_STATUSES } from '../constants/workLogConstants';
 import { projectService } from '../../projects/services/projectService';
 import { taskItemService } from '../../task-items/services/taskItemService';
+import { ExportDialog } from '../../reports/components/ExportDialog';
+import { REPORT_TYPES } from '../../reports/hooks/useExport';
 
 export const WorkLogListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,6 +29,7 @@ export const WorkLogListPage = () => {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [workDateFrom, setWorkDateFrom] = useState('');
   const [workDateTo, setWorkDateTo] = useState('');
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -148,13 +152,24 @@ export const WorkLogListPage = () => {
           </p>
         </div>
 
-        <Link
-          to="/work-logs/new"
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl shadow-xs transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Work Log</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsExportOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm rounded-xl border border-slate-300 shadow-2xs transition-colors"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>Export Excel</span>
+          </button>
+
+          <Link
+            to="/work-logs/new"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl shadow-xs transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Work Log</span>
+          </Link>
+        </div>
       </div>
 
       {/* Filter Toolbar */}
@@ -394,6 +409,24 @@ export const WorkLogListPage = () => {
           )}
         </>
       )}
+
+      {/* Export Dialog */}
+      <ExportDialog
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        reportType={REPORT_TYPES.DAILY_WORK_LOG}
+        initialScope={hasActiveFilters ? 'filtered' : 'all'}
+        initialFilters={{
+          search: debouncedSearch,
+          projectId: selectedProjectId,
+          taskItemId: selectedTaskItemId,
+          environment: selectedEnvironment,
+          workType: selectedWorkType,
+          status: selectedStatus,
+          workDateFrom,
+          workDateTo,
+        }}
+      />
     </div>
   );
 };

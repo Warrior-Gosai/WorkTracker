@@ -14,6 +14,7 @@ import WorkSummary from '../components/WorkSummary';
 import ProjectSummary from '../components/ProjectSummary';
 import PendingTaskSummary from '../components/PendingTaskSummary';
 import RecentActivities from '../components/RecentActivities';
+import DashboardReports from '../components/DashboardReports';
 import { RefreshCw, LayoutDashboard } from 'lucide-react';
 import Button from '../../../components/common/Button';
 
@@ -135,7 +136,10 @@ export const DashboardPage = () => {
         onFilterChange={setWorkFilters}
       />
 
-      {/* 4. Two-Column Layout: Project Performance + Pending & Activities */}
+      {/* 4. Excel Reports & Exports Section */}
+      <DashboardReports />
+
+      {/* 5. Two-Column Layout: Project Performance + Pending & Activities */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Project Breakdown */}
         <div className="space-y-6">

@@ -27,6 +27,7 @@ import PendingTaskListPage from '../features/pending-tasks/pages/PendingTaskList
 import PendingTaskCreatePage from '../features/pending-tasks/pages/PendingTaskCreatePage';
 import PendingTaskDetailPage from '../features/pending-tasks/pages/PendingTaskDetailPage';
 import PendingTaskEditPage from '../features/pending-tasks/pages/PendingTaskEditPage';
+import ReportsPage from '../features/reports/pages/ReportsPage';
 import { ROUTES } from '../constants';
 
 export const AppRoutes = () => {
@@ -66,6 +67,7 @@ export const AppRoutes = () => {
           <Route path={`${ROUTES.DB_CHANGES}/new`} element={<DbChangeCreatePage />} />
           <Route path={`${ROUTES.DB_CHANGES}/:dbChangeId`} element={<DbChangeDetailPage />} />
           <Route path={`${ROUTES.DB_CHANGES}/:dbChangeId/edit`} element={<DbChangeEditPage />} />
+          <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
           {/* Default root path redirects to dashboard */}
           <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.DASHBOARD} replace />} />
         </Route>

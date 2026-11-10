@@ -23,12 +23,17 @@ public interface DbChangeRepository extends JpaRepository<DbChange, Long>, JpaSp
 
     List<DbChange> findByWorkLogId(Long workLogId);
 
+    List<DbChange> findByWorkLogIdIn(List<Long> workLogIds);
+
     @EntityGraph(attributePaths = {"workLog", "workLog.taskItem", "workLog.taskItem.project"})
     List<DbChange> findAllBy(Pageable pageable);
 
     @Override
     @EntityGraph(attributePaths = {"workLog", "workLog.taskItem", "workLog.taskItem.project"})
     Page<DbChange> findAll(Specification<DbChange> spec, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"workLog", "workLog.taskItem", "workLog.taskItem.project"})
+    List<DbChange> findAll(Specification<DbChange> spec, org.springframework.data.domain.Sort sort);
 
     @Override
     @EntityGraph(attributePaths = {"workLog", "workLog.taskItem", "workLog.taskItem.project"})

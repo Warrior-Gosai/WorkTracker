@@ -619,29 +619,66 @@ Route: `/work-logs/:workLogId`
 
 Route: `/reports`
 
-Purpose: Download the three original workbooks.
+Purpose: Central hub to generate and download Excel reports (`.xlsx`) matching the original Excel workbooks and bundled ZIP archives (`.zip`).
 
-### 11.1 Export Options
+### 11.1 Screen Layout & Structure
 
-1. Daily Work Log.
-2. Database Change Log.
-3. Code File Change Log.
-4. Download All as ZIP.
+The screen consists of three main visual sections:
+1. **Header Section**: Page title, description, and status summary.
+2. **Download All Reports Hero Banner**: Prominent banner allowing one-click export or filtered download of all three workbooks bundled into `DevWork_Tracker_Reports.zip`.
+3. **Individual Report Cards Grid**: Three dedicated cards representing the replacement workbooks:
+   - **Daily Work Log Card**: `01_Daily_Work_Log.xlsx` (22 columns, Sheets: "Daily Work Log" + "Instructions", formulas for Day and Total Hours).
+   - **Database Change Log Card**: `02_DB_Change_Log.xlsx` (12 columns, Sheets: "Database Change Log" + "Instructions").
+   - **Code File Change Log Card**: `03_Code_File_Change_Log.xlsx` (13 columns, Sheets: "Code File Change Log" + "Instructions", includes SVN Commit ID and Change Status).
 
-### 11.2 Optional Filters
+### 11.2 Individual Report Card Features
 
-- From Date.
-- To Date.
-- Project.
+Each report card displays:
+- Workbook filename and official title.
+- Structural metadata badges (Total columns count, Original Template Preserved badge, Instructions Sheet Preserved badge).
+- Concise description of the sheet purpose and source mappings.
+- **Quick Export (All)** button: Immediately initiates download of the entire historical dataset (`scope=all`).
+- **Filter & Export** button: Opens the `ExportDialog` modal for customized scoping and criteria selection.
 
-### 11.3 Export Behaviour
+### 11.3 ExportDialog Modal Component
 
-- Download the correct XLSX or ZIP file.
-- Use the original workbook structure.
-- Preserve approved columns.
-- Show loading feedback.
-- Show an error if export fails.
-- Do not modify existing database records.
+A reusable modal triggered from `/reports` cards, Dashboard, or individual module listing headers:
+- **Scope Toggle**: Radio selection between:
+  - `All Records`: Full historical dataset ignoring filters.
+  - `Filtered Records`: Applies selected query parameters.
+- **Filter Inputs** (enabled when `scope=filtered`):
+  - Common filters: Date range (`fromDate` and `toDate` date pickers) and Project dropdown.
+  - Module-specific filters:
+    - *Daily Work Log*: Task Item ID, Work Type, Status, Technology/Area.
+    - *Database Change Log*: Environment, Database Name, Object Type.
+    - *Code Change Log*: Change Status (`COMMITTED` / `UNCOMMITTED`), Layer, Technology.
+- **Validation**:
+  - Enforces `fromDate <= toDate` when both dates are provided.
+- **Download Protection & Feedback**:
+  - Locks submit button and displays spinning indicator while download is generating (`isExporting` lock).
+  - Toast notification upon download start and completion.
+  - Form remains open if export fails with user-friendly error message.
+
+### 11.4 Integration Points Across the Application
+
+1. **Sidebar Navigation**:
+   - Direct link to `/reports` with FileSpreadsheet icon, accessible when authenticated.
+2. **Dashboard Integration (`DashboardReports.jsx`)**:
+   - "Excel Reports & Exports" section located on `/dashboard`.
+   - Quick export buttons for all 3 workbooks and the all-inclusive ZIP.
+3. **Module List Page Export Actions**:
+   - Header action button "Export Excel" in:
+     - `WorkLogListPage.jsx` (`/work-logs`)
+     - `DbChangeListPage.jsx` (`/db-changes`)
+     - `CodeChangeListPage.jsx` (`/code-changes`)
+   - Pre-populates the `ExportDialog` with the currently applied list filters (date range, project, status, etc.).
+
+### 11.5 Export Behaviour & Safety
+
+- Uses browser blob download triggered via temporary object URL.
+- Cleans up DOM anchor elements and blob object URLs after download initiation.
+- Extracts filenames from HTTP `Content-Disposition` header or falls back to standard report filenames.
+- Read-only operation: does not mutate database records or server state.
 
 ## 12. Settings Screen
 

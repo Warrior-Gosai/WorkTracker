@@ -21,57 +21,48 @@ Initial scope:
 
 Excel import is not included initially.
 
-## 2. Original Workbook Requirements
+## 2. Original Workbook Requirements & Template Inspection
 
-The implementation must use the user's original XLSX workbooks as reference templates.
+The implementation uses the user's original XLSX workbooks stored in `OLD_XLS_FILES/` as reference templates. These templates were copied to `backend/src/main/resources/excel-templates/` and serve as the baseline for generation so all fonts, borders, headers, and instructional sheets are strictly preserved:
 
-Original workbooks:
+1. **`01_Daily_Work_Log.xlsx`** (Template: `Daily_Work_Log.xlsx`):
+   - Sheets: `Daily Work Log` (data sheet) and `Instructions` (guidance sheet).
+   - Columns: 22 columns (Work ID through Notes/Remarks).
+   - Freeze pane: Top header row frozen (`freezePane(0, 1)`).
+   - Existing formulas:
+     - Day (Col 3 / C): `=IF(B{r}="","",TEXT(B{r},"dddd"))`
+     - Total Hours (Col 13 / M): `=IF(OR(K{r}="",L{r}=""),"",MOD(L{r}-K{r},1)*24)`
+   - Autofilter: `A1:V1` (dynamically adjusted based on exported row count).
+   - Template handling: Pre-existing empty/placeholder rows (1 to 999) are removed before writing actual database records, while preserving cell formatting and formulas.
 
-- `01_Daily_Work_Log.xlsx`
-- `02_DB_Change_Log.xlsx`
-- `03_Code_File_Change_Log.xlsx`
+2. **`02_DB_Change_Log.xlsx`** (Template: `Database_Change_Log.xlsx`):
+   - Sheets: `Database Change Log` (data sheet) and `Instructions` (guidance sheet).
+   - Columns: 12 columns (DB Change ID through Remarks).
+   - Freeze pane: Top header row frozen (`freezePane(0, 1)`).
+   - Autofilter: `A1:L1000` (dynamically adjusted to data bounds).
+   - Template handling: Template rows 1 to 999 are cleared while preserving cell styles before writing database records.
 
-Before implementing Excel generation, inspect the actual files and document:
-- Worksheet names.
-- Column names and order.
-- Header formatting.
-- Column widths.
-- Number formats.
-- Date and time formats.
-- Existing formulas.
-- Dropdown validations.
-- Freeze panes.
-- Filters.
-- Relevant cell styles.
-
-Do not assume that the workbook structure is fully represented by this document.
-
-The original files must be inspected during implementation. Preserve relevant formatting and workbook behaviour where practical.
+3. **`03_Code_File_Change_Log.xlsx`** (Template: `Code_File_Change_Log.xlsx`):
+   - Sheets: `Code File Change Log` (data sheet) and `Instructions` (guidance sheet).
+   - Columns: 13 columns — original 11 columns + approved Col 12 (`SVN Commit ID`) and Col 13 (`Change Status`).
+   - Freeze pane: Top header row frozen (`freezePane(0, 1)`).
+   - Multi-file handling: Multiple child file changes under a single code change are aggregated into newline-delimited (`\n`) text cells with `wrapText = true`.
 
 ## 3. Export API Endpoints
 
 Base path: `/api/v1/exports`
 
-| Method | Endpoint | Output |
-|---|---|---|
-| GET | `/work-logs` | Daily Work Log XLSX |
-| GET | `/db-changes` | DB Change Log XLSX |
-| GET | `/code-changes` | Code File Change Log XLSX |
-| GET | `/all` | ZIP containing all three XLSX files |
+| Method | Endpoint | Query Parameters | Output File | MIME Type |
+|---|---|---|---|---|
+| GET | `/work-logs` | `scope`, `fromDate`, `toDate`, `projectId`, `taskItemId`, `workType`, `status`, `technologyArea` | `01_Daily_Work_Log.xlsx` | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
+| GET | `/db-changes` | `scope`, `fromDate`, `toDate`, `projectId`, `environment`, `databaseName`, `objectType` | `02_DB_Change_Log.xlsx` | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
+| GET | `/code-changes` | `scope`, `fromDate`, `toDate`, `projectId`, `changeStatus`, `layer`, `technology` | `03_Code_File_Change_Log.xlsx` | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
+| GET | `/all` | `scope`, `fromDate`, `toDate`, `projectId` | `DevWork_Tracker_Reports.zip` | `application/zip` |
 
-Optional query parameters:
-
-- `fromDate`
-- `toDate`
-- `projectId`
-
-Example:
-
-`GET /api/v1/exports/work-logs?fromDate=2026-11-01&toDate=2026-11-30&projectId=1`
-
-If filters are not supplied, export all available records for that workbook.
-
-Validate date ranges and project IDs.
+### Scope Parameter
+- `scope=all`: Complete historical export, ignoring date range and module filters.
+- `scope=filtered` (default): Applies query filters to match all corresponding records without pagination limits.
+- Any invalid scope value returns HTTP 400 with a descriptive error message.
 
 ## 4. Daily Work Log Export
 
@@ -244,12 +235,12 @@ Endpoint:
 
 Filename:
 
-`DevWork_Tracker_Export.zip`
+`DevWork_Tracker_Reports.zip`
 
 ZIP contents:
 
 ```text
-DevWork_Tracker_Export.zip
+DevWork_Tracker_Reports.zip
 ├── 01_Daily_Work_Log.xlsx
 ├── 02_DB_Change_Log.xlsx
 └── 03_Code_File_Change_Log.xlsx
@@ -260,7 +251,7 @@ Rules:
 - Apply the same supplied date and project filters to each workbook.
 - Include all three files even when one workbook has no matching records.
 - Do not modify database data.
-- Return a valid ZIP file with the correct content type.
+- Return a valid ZIP file with the correct content type (`application/zip`).
 
 ## 8. Filtering Rules
 
