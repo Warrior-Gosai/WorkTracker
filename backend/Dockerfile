@@ -1,14 +1,20 @@
 
-FROM maven:3.9-eclipse-temurin-17 AS build
+# Stage 1: Build application using Java 23
+FROM eclipse-temurin:23-jdk AS build
 
 WORKDIR /app
 
-COPY pom.xml .
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+
+RUN chmod +x mvnw
+
 COPY src ./src
 
-RUN mvn clean package -DskipTests
+RUN ./mvnw clean package -B
 
-FROM eclipse-temurin:17-jre
+# Stage 2: Run application using Java 23
+FROM eclipse-temurin:23-jre
 
 WORKDIR /app
 
@@ -16,4 +22,4 @@ COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar app.jar"]
