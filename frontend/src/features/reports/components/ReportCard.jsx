@@ -77,3 +77,4 @@ export const ReportCard = ({
 };
 
 export default ReportCard;
+

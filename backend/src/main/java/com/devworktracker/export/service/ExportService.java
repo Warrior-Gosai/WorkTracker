@@ -15,3 +15,4 @@ public interface ExportService {
 
     byte[] exportAllReportsZip(AllExportFilter filter);
 }
+
