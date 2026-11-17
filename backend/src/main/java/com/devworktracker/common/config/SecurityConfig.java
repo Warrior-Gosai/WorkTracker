@@ -52,17 +52,17 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .csrfTokenRequestHandler(requestHandler)
-                .ignoringRequestMatchers(
-                    "/api/v1/auth/login",
-                    "/api/v1/auth/register",
-                    "/api/v1/auth/setup-status",
-                    "/api/v1/auth/csrf-token",
-                    "/v3/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html"
+            .csrf(csrf -> csrf.disable()
+                //.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                //.csrfTokenRequestHandler(requestHandler)
+                //.ignoringRequestMatchers(
+                   // "/api/v1/auth/login",
+                    //"/api/v1/auth/register",
+                    //"/api/v1/auth/setup-status",
+                    //"/api/v1/auth/csrf-token",
+                    //"/v3/api-docs/**",
+                    //"/swagger-ui/**",
+                    //"/swagger-ui.html"
                 )
             )
             .exceptionHandling(exceptions -> exceptions
